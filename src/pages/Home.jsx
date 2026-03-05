@@ -7,8 +7,8 @@ import HomeBottomButtons from '../components/HomeBottomButtons';
 import UserProfile from '../modals/UserProfile';
 import BalanceModal from '../modals/BalanceModal';
 import { useNavigate } from 'react-router-dom';
-import { FaShoppingBag } from 'react-icons/fa';
-import { BsMouseFill } from 'react-icons/bs';
+import { FaSackDollar } from 'react-icons/fa6';
+import { PiCursorClick } from 'react-icons/pi';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -129,13 +129,21 @@ const Home = () => {
 
       {/* STAT BADGES */}
       <div
-        className="flex-shrink-0 flex items-center justify-center mt-2"
-        style={{ gap: 'clamp(8px, 3vw, 16px)' }}
+        style={{
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginTop: '8px',
+          gap: 'clamp(8px, 3vw, 16px)',
+          marginBottom: '35px'
+        }}
       >
         {/* В/час badge — green */}
         <div
-          className="flex items-center"
           style={{
+            display: 'flex',
+            alignItems: 'center',
             gap: 'clamp(4px, 1.5vw, 8px)',
             padding: 'clamp(4px, 1.2vw, 6px) clamp(10px, 3vw, 16px)',
             borderRadius: '9999px',
@@ -146,21 +154,27 @@ const Home = () => {
           }}
         >
           <span
-            className="text-white font-black whitespace-nowrap"
-            style={{ fontSize: 'clamp(10px, 3vw, 13px)' }}
+            style={{
+              color: '#ffffff',
+              fontWeight: 900,
+              whiteSpace: 'nowrap',
+              fontSize: 'clamp(10px, 3vw, 13px)',
+              fontFamily: 'inherit',
+            }}
           >
             101.7В/час
           </span>
-          <FaShoppingBag
+          <FaSackDollar
             color="#ffffff"
-            style={{ fontSize: 'clamp(11px, 3vw, 14px)', flexShrink: 0 }}
+            style={{ fontSize: 'clamp(11px, 3vw, 14px)', flexShrink: 0, display: 'block' }}
           />
         </div>
 
         {/* М/тап badge — yellow/orange */}
         <div
-          className="flex items-center"
           style={{
+            display: 'flex',
+            alignItems: 'center',
             gap: 'clamp(4px, 1.5vw, 8px)',
             padding: 'clamp(4px, 1.2vw, 6px) clamp(10px, 3vw, 16px)',
             borderRadius: '9999px',
@@ -171,14 +185,19 @@ const Home = () => {
           }}
         >
           <span
-            className="text-white font-black whitespace-nowrap"
-            style={{ fontSize: 'clamp(10px, 3vw, 13px)' }}
+            style={{
+              color: '#ffffff',
+              fontWeight: 900,
+              whiteSpace: 'nowrap',
+              fontSize: 'clamp(10px, 3vw, 13px)',
+              fontFamily: 'inherit',
+            }}
           >
             12.3М/тап
           </span>
-          <BsMouseFill
+          <PiCursorClick
             color="#ffffff"
-            style={{ fontSize: 'clamp(11px, 3vw, 14px)', flexShrink: 0 }}
+            style={{ fontSize: 'clamp(11px, 3vw, 14px)', flexShrink: 0, display: 'block' }}
           />
         </div>
       </div>
