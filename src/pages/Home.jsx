@@ -127,7 +127,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* STAT BADGES */}
+      
       <div
         style={{
           flexShrink: 0,
