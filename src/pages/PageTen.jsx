@@ -10,7 +10,7 @@ import faIcon from '../assets/page10Images/ticket-small.webp';
 
 const PRESET_AMOUNTS = [10, 100, 1000, 10000];
 
-const Page10 = () => {
+const PageTen = () => {
   const navigate = useNavigate();
 
   
@@ -516,4 +516,4 @@ const Page10 = () => {
   );
 };
 
-export default Page10;
+export default PageTen;

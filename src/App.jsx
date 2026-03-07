@@ -9,9 +9,9 @@ import BonusesPage from "./pages/BonusesPage";
 import GamesPage from "./pages/GamesPage";
 import Page20 from "./pages/Page20";
 import Page12 from "./pages/Page12";
-import Page10 from "./pages/page10";
 import Page15 from "./pages/Page15";
 import Page14 from "./pages/Page14";
+import PageTen from "./pages/PageTen";
 
 function App() {
   return (
@@ -26,7 +26,7 @@ function App() {
       <Route path="/games"       element={<GamesPage />} />
       <Route path="/page20"       element={<Page20 />} />
       <Route path="/page12"       element={<Page12 />} />
-      <Route path="/page10"       element={<Page10 />} />
+      <Route path="/page10"       element={<PageTen />} />
       <Route path="/page14"       element={<Page14/>} />
       <Route path="/page15"       element={<Page15 />} />
     </Routes>
