@@ -12,6 +12,7 @@ import Page12 from "./pages/Page12";
 import Page15 from "./pages/Page15";
 import Page14 from "./pages/Page14";
 import PageTen from "./pages/PageTen";
+import Page18 from "./pages/Page18";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
       <Route path="/page10"       element={<PageTen />} />
       <Route path="/page14"       element={<Page14/>} />
       <Route path="/page15"       element={<Page15 />} />
+      <Route path="/page18"       element={<Page18 />} />
     </Routes>
   );
 }
