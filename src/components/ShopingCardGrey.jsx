@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ShopCard = ({ image, label, price, emoji, objectPosition = 'center' }) => (
+const ShopCard = ({ image, label, price, emoji, objectPosition = 'center', onClick, loading }) => (
   <div
     className='flex flex-col items-center rounded-xl overflow-hidden'
     style={{
@@ -34,6 +34,8 @@ const ShopCard = ({ image, label, price, emoji, objectPosition = 'center' }) => 
     {/* Buy button */}
     <div className='w-full flex justify-center pb-2 pt-1' style={{ height: '22%' }}>
       <button
+        onClick={onClick}
+        disabled={loading}
         className='active:scale-95 transition-transform font-black rounded-lg flex items-center justify-center gap-0.5'
         style={{
           width: '50%',
@@ -41,15 +43,18 @@ const ShopCard = ({ image, label, price, emoji, objectPosition = 'center' }) => 
           paddingLeft: '4px',
           paddingRight: '4px',
           fontSize: 'clamp(8px, 2vw, 10px)',
-          background: 'linear-gradient(180deg, #d4ac00 0%, #b89200 100%)',
+          background: loading
+            ? 'linear-gradient(180deg,#888,#666)'
+            : 'linear-gradient(180deg, #d4ac00 0%, #b89200 100%)',
           border: '1.5px solid #8a6500',
           color: '#fff',
-          boxShadow: '0 2px 0 #6b4e00, inset 0 1px 0 rgba(255,255,255,0.15)',
+          boxShadow: loading ? 'none' : '0 2px 0 #6b4e00, inset 0 1px 0 rgba(255,255,255,0.15)',
           textShadow: '0 1px 1px rgba(0,0,0,0.3)',
           whiteSpace: 'nowrap',
+          cursor: loading ? 'not-allowed' : 'pointer',
         }}
       >
-        {price} {emoji}
+        {loading ? '...' : `${price} ${emoji}`}
       </button>
     </div>
   </div>
