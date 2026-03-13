@@ -28,10 +28,18 @@ function App() {
   const { ready, loading, error } = useSelector((state) => state.auth);
 
   const tg = useTelegram();
-  
-  // ✅ Dev mode bypass for browser
-  const isDev = import.meta.env.DEV;
-  const isInsideTelegram = isDev || Boolean(tg?.initData);
+
+  // Allow:
+  // 1. Local dev (npm run dev)
+  // 2. Inside Telegram (has initData)
+  // 3. Vercel preview/production URLs
+  const isDev             = import.meta.env.DEV;
+  const isInsideTelegram  = Boolean(tg?.initData);
+  const isVercel          = typeof window !== "undefined" &&
+                            (window.location.hostname.endsWith(".vercel.app") ||
+                             window.location.hostname.endsWith(".vercel.com"));
+
+  const canRender = isDev || isInsideTelegram || isVercel;
 
   useEffect(() => {
     dispatch(loginAsync());
@@ -43,12 +51,10 @@ function App() {
     }
   }, [ready, dispatch]);
 
-  // Mobile / outside Telegram
-  if (!isInsideTelegram) {
+  if (!canRender) {
     return <MobileOnly />;
   }
 
-  // Loading state
   if (loading) {
     return (
       <div style={styles.center}>
@@ -58,11 +64,10 @@ function App() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div style={styles.center}>
-        <p style={styles.errorText}>⚠️ Failed to connect</p>
+        <p style={styles.errorText}>Failed to connect</p>
         <p style={styles.subText}>{error}</p>
         <button style={styles.retryBtn} onClick={() => dispatch(loginAsync())}>
           Retry
@@ -102,7 +107,6 @@ const styles = {
   subText:   { color: "#888", fontSize: "13px", maxWidth: "280px", textAlign: "center" },
   retryBtn:  { marginTop: "8px", padding: "10px 24px", background: "#fff", color: "#000", border: "none", borderRadius: "8px", fontSize: "14px", cursor: "pointer" },
 };
-
 
 const styleTag = document.createElement("style");
 styleTag.innerHTML = `@keyframes spin { to { transform: rotate(360deg); } }`;
