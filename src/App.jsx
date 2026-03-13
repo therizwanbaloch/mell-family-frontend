@@ -103,7 +103,7 @@ const styles = {
   retryBtn:  { marginTop: "8px", padding: "10px 24px", background: "#fff", color: "#000", border: "none", borderRadius: "8px", fontSize: "14px", cursor: "pointer" },
 };
 
-// Append spinner keyframes for dev mode
+
 const styleTag = document.createElement("style");
 styleTag.innerHTML = `@keyframes spin { to { transform: rotate(360deg); } }`;
 document.head.appendChild(styleTag);

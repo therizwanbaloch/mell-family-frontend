@@ -19,7 +19,7 @@ const SYMS = [
 ]
 const W_TOTAL = SYMS.reduce((s,x)=>s+x.w,0)
 const BETS    = [10, 25, 50, 100, 250, 500]
-const CELL    = 62   // px per symbol row — keep small so 3 rows fit
+const CELL    = 62
 const LS_KEY  = 'mell_chips_v3'
 
 function pick() {
@@ -37,7 +37,7 @@ function lsGet()  { try { const v=localStorage.getItem(LS_KEY); return v!==null?
 function lsSet(n) { try { localStorage.setItem(LS_KEY,String(Math.max(0,Math.floor(n)))) } catch {} }
 
 /* ═══════════════════════════════════════
-   REEL  — pure CSS rAF animation
+   REEL
 ═══════════════════════════════════════ */
 const Reel = React.memo(({ spinning, target, delay, onDone, highlight }) => {
   const stripRef = useRef(Array.from({length:20},()=>SYMS[Math.floor(Math.random()*SYMS.length)]))
@@ -76,7 +76,6 @@ const Reel = React.memo(({ spinning, target, delay, onDone, highlight }) => {
       boxShadow: highlight ? '0 0 18px rgba(255,215,40,0.35), inset 0 0 14px rgba(255,215,40,0.08)' : 'none',
       transition:'border-color .3s, box-shadow .3s',
     }}>
-      {/* payline */}
       <div style={{
         position:'absolute', top:CELL, left:0, right:0, height:CELL,
         zIndex:2, pointerEvents:'none',
@@ -84,7 +83,6 @@ const Reel = React.memo(({ spinning, target, delay, onDone, highlight }) => {
         borderTop:'1px solid rgba(255,215,40,0.2)',
         borderBottom:'1px solid rgba(255,215,40,0.2)',
       }}/>
-      {/* strip */}
       <div style={{ position:'absolute', top: -(frac*CELL)-(row*CELL), willChange:'transform' }}>
         {stripRef.current.map((s,i)=>(
           <div key={i} style={{
@@ -93,7 +91,6 @@ const Reel = React.memo(({ spinning, target, delay, onDone, highlight }) => {
           }}>{s.e}</div>
         ))}
       </div>
-      {/* fade */}
       <div style={{
         position:'absolute', inset:0, zIndex:3, pointerEvents:'none',
         background:'linear-gradient(180deg,rgba(0,0,0,.7) 0%,transparent 26%,transparent 74%,rgba(0,0,0,.7) 100%)',
@@ -155,16 +152,15 @@ export default function Page24() {
   const [targets,  setTargets]  = useState([SYMS[4], SYMS[4], SYMS[4]])
   const [doneN,    setDoneN]    = useState(0)
   const [settled,  setSettled]  = useState(false)
-  const [result,   setResult]   = useState(null)   // {type:'win'|'lose', amt}
+  const [result,   setResult]   = useState(null)
   const [flash,    setFlash]    = useState(false)
   const [showPay,  setShowPay]  = useState(false)
-  const [history,  setHistory]  = useState([])     // 'w'|'j'|'l'
+  const [history,  setHistory]  = useState([])
 
   const bet     = BETS[betIdx]
   const balance = user?.chips ?? 0
   const canSpin = !spinning && balance >= bet
 
-  /* ── localStorage sync on backend refresh ── */
   useEffect(() => {
     if (!user) return
     const srv   = user.chips ?? 0
@@ -183,7 +179,6 @@ export default function Page24() {
 
   const handleReelDone = useCallback(() => setDoneN(p => p+1), [])
 
-  /* ── Evaluate after all 3 reels stop ── */
   useEffect(() => {
     if (doneN < 3) return
     setDoneN(0)
@@ -240,7 +235,7 @@ export default function Page24() {
         .sbtn:active { transform:translateY(4px)!important; box-shadow:0 1px 0 #4a2400!important; }
       `}</style>
 
-      {/* ══ HEADER — fixed height ══ */}
+      {/* HEADER */}
       <div style={{
         flexShrink:0, height:52,
         background:'rgba(0,0,0,.93)',
@@ -269,7 +264,7 @@ export default function Page24() {
         }}>ВЫПЛАТЫ</button>
       </div>
 
-      {/* ══ BALANCE + HISTORY — fixed height ══ */}
+      {/* BALANCE + HISTORY */}
       <div style={{
         flexShrink:0, height:46,
         background:'rgba(0,0,0,.55)',
@@ -277,7 +272,6 @@ export default function Page24() {
         display:'flex', alignItems:'center', justifyContent:'space-between',
         padding:'0 14px', gap:10,
       }}>
-        {/* Chips pill */}
         <div style={{
           display:'flex', flexDirection:'column', alignItems:'center',
           background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,255,255,.09)',
@@ -287,7 +281,6 @@ export default function Page24() {
           <span style={{ fontSize:15, fontWeight:900, color:'#82d2ff', lineHeight:1.15 }}>{fmt(balance)}</span>
         </div>
 
-        {/* History dots — last 12 results */}
         <div style={{ display:'flex', gap:3, alignItems:'center' }}>
           {Array.from({length:12}).map((_,i)=>{
             const h = history[history.length-12+i]
@@ -298,15 +291,14 @@ export default function Page24() {
         </div>
       </div>
 
-      {/* ══ MACHINE — flex-1 centre area ══ */}
+      {/* MACHINE */}
       <div style={{
         flex:1, display:'flex', flexDirection:'column',
         alignItems:'center', justifyContent:'center',
         padding:'8px 14px 10px', gap:8,
-        minHeight:0,   /* critical: prevents flex child from overflowing */
+        minHeight:0,
       }}>
 
-        {/* Machine body */}
         <div style={{
           width:'100%', maxWidth:350,
           background:'linear-gradient(155deg,#1e1500,#120e00,#080500)',
@@ -314,7 +306,6 @@ export default function Page24() {
           animation:'glow 3s ease-in-out infinite',
           position:'relative', flexShrink:0,
         }}>
-          {/* Jewel row */}
           <div style={{ display:'flex', justifyContent:'center', gap:5, marginBottom:8 }}>
             {['#f0c020','#ff4444','#4ade80','#f0c020','#4ade80','#ff4444','#f0c020'].map((c,i)=>(
               <div key={i} style={{ width:7, height:7, borderRadius:'50%', background:c,
@@ -322,11 +313,9 @@ export default function Page24() {
             ))}
           </div>
 
-          {/* Gold bar top */}
           <div style={{ height:2, marginBottom:9, borderRadius:1,
             background:'linear-gradient(90deg,transparent,#d4a020,#f0c020,#d4a020,transparent)', opacity:.6 }}/>
 
-          {/* 3 Reels */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:5, position:'relative',
             background:'rgba(0,0,0,.5)', borderRadius:12, padding:6,
             border:'1px solid rgba(200,140,0,.15)' }}>
@@ -338,7 +327,6 @@ export default function Page24() {
               />
             ))}
 
-            {/* Jackpot overlay */}
             {flash && result?.type==='jackpot' && (
               <div style={{ position:'absolute', inset:0, zIndex:10, pointerEvents:'none',
                 display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -347,12 +335,11 @@ export default function Page24() {
                   border:'2px solid rgba(255,255,255,.55)',
                   boxShadow:'0 0 50px rgba(240,192,32,.8)',
                   animation:'pop .4s cubic-bezier(.34,1.56,.64,1)', textAlign:'center' }}>
-                  <div style={{ color:'#000', fontWeight:900, fontSize:17 }}>ДЖЕКПОТ! 🎉</div>
+                  <div style={{ color:'#000', fontWeight:900, fontSize:17 }}>ДЖЕКПОТ!</div>
                   <div style={{ color:'#000', fontWeight:900, fontSize:13 }}>+{fmt(result.amt)} CHIPS</div>
                 </div>
               </div>
             )}
-            {/* Small win overlay */}
             {flash && result?.type==='small' && (
               <div style={{ position:'absolute', inset:0, zIndex:10, pointerEvents:'none',
                 display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -364,11 +351,9 @@ export default function Page24() {
             )}
           </div>
 
-          {/* Gold bar bottom */}
           <div style={{ height:2, marginTop:9, marginBottom:4, borderRadius:1,
             background:'linear-gradient(90deg,transparent,#d4a020,#f0c020,#d4a020,transparent)', opacity:.5 }}/>
 
-          {/* Status line */}
           <div style={{ height:14, display:'flex', alignItems:'center', justifyContent:'center' }}>
             {!spinning && result && !flash && (
               <span style={{ fontSize:10, fontWeight:900, letterSpacing:'.06em',
@@ -380,19 +365,20 @@ export default function Page24() {
           </div>
         </div>
 
-        {/* ══ BET SELECTOR ══ */}
+        {/* BET SELECTOR — fixed: no duplicate border key */}
         <div style={{ width:'100%', maxWidth:350, flexShrink:0 }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:5 }}>
             <span style={{ fontSize:8, color:'rgba(255,255,255,.38)', fontWeight:700, letterSpacing:'.12em', textTransform:'uppercase' }}>СТАВКА</span>
             <span style={{ fontSize:12, color:'#82d2ff', fontWeight:900 }}>{fmt(bet)} CHIPS</span>
           </div>
           <div style={{ display:'flex', gap:4 }}>
-            {BETS.map((b,i)=>{
-              const active = betIdx===i
+            {BETS.map((b,i) => {
+              const active = betIdx === i
               return (
-                <button key={i} onClick={()=>!spinning&&setBetIdx(i)} style={{
-                  flex:1, padding:'6px 2px', borderRadius:7, border:'none',
-                  cursor:spinning?'not-allowed':'pointer', fontWeight:900, fontSize:9,
+                <button key={i} onClick={() => !spinning && setBetIdx(i)} style={{
+                  flex:1, padding:'6px 2px', borderRadius:7,
+                  cursor: spinning ? 'not-allowed' : 'pointer',
+                  fontWeight:900, fontSize:9,
                   background: active
                     ? 'linear-gradient(180deg,#ffe033,#f0a800)'
                     : [
@@ -403,19 +389,23 @@ export default function Page24() {
                         'linear-gradient(180deg,#1a6a6a,#0e3e3e)',
                         'linear-gradient(180deg,#6a1a1a,#3e0e0e)',
                       ][i],
-                  color: active?'#3a2000':'rgba(255,255,255,.75)',
-                  border: active?'2px solid #b58030':'1px solid rgba(255,255,255,.15)',
+                  color: active ? '#3a2000' : 'rgba(255,255,255,.75)',
+                  // ── single border declaration (was duplicated before) ──
+                  border: active ? '2px solid #b58030' : '1px solid rgba(255,255,255,.15)',
                   boxShadow: active
                     ? '0 3px 0 #7a4e00,inset 0 1px 0 rgba(255,255,255,.25)'
                     : '0 3px 0 rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)',
-                  opacity:spinning?.65:1, transition:'all .15s',
-                }}>{fmt(b)}</button>
+                  opacity: spinning ? .65 : 1,
+                  transition:'all .15s',
+                }}>
+                  {fmt(b)}
+                </button>
               )
             })}
           </div>
         </div>
 
-        {/* ══ SPIN BUTTON ══ */}
+        {/* SPIN BUTTON */}
         <button
           className="sbtn"
           onClick={handleSpin}
@@ -423,17 +413,17 @@ export default function Page24() {
           style={{
             width:'100%', maxWidth:350, flexShrink:0,
             padding:'13px 0', borderRadius:13, border:'none',
-            background: canSpin?'linear-gradient(180deg,#f0a800,#da9d01)':'rgba(255,255,255,.06)',
-            color: canSpin?'#000':'rgba(255,255,255,.2)',
+            background: canSpin ? 'linear-gradient(180deg,#f0a800,#da9d01)' : 'rgba(255,255,255,.06)',
+            color: canSpin ? '#000' : 'rgba(255,255,255,.2)',
             fontWeight:900, fontSize:17, letterSpacing:'.14em', textTransform:'uppercase',
-            cursor:canSpin?'pointer':'not-allowed',
-            animation: canSpin&&!spinning?'btnG 2s ease-in-out infinite':'none',
-            boxShadow: canSpin?'0 5px 0 #7a4e00,inset 0 1px 0 rgba(255,255,255,.25)':'none',
+            cursor: canSpin ? 'pointer' : 'not-allowed',
+            animation: canSpin && !spinning ? 'btnG 2s ease-in-out infinite' : 'none',
+            boxShadow: canSpin ? '0 5px 0 #7a4e00,inset 0 1px 0 rgba(255,255,255,.25)' : 'none',
             transition:'background .2s, color .2s',
             userSelect:'none',
           }}
         >
-          {spinning ? '▶  ▶  ▶' : '🎰  КРУТИТЬ'}
+          {spinning ? '▶  ▶  ▶' : 'КРУТИТЬ'}
         </button>
 
         {!canSpin && !spinning && (
@@ -444,7 +434,7 @@ export default function Page24() {
 
       </div>
 
-      {showPay && <PaySheet onClose={()=>setShowPay(false)}/>}
+      {showPay && <PaySheet onClose={() => setShowPay(false)} />}
     </div>
   )
 }
