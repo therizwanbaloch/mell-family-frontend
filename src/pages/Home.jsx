@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaSackDollar } from 'react-icons/fa6';
 import { PiCursorClick } from 'react-icons/pi';
 import { useSelector } from 'react-redux';
+import SnackBar from '../components/SnackBar';
 
 const AnimatedNumber = ({ value, formatter }) => {
   const [display, setDisplay] = useState(value);
@@ -63,10 +64,7 @@ const Home = () => {
       className="max-w-[430px] mx-auto h-dvh overflow-hidden flex flex-col bg-cover bg-center"
       style={{ backgroundImage: `url(${mainBg})` }}
     >
-      
-
-
-      
+      {/* TITLE */}
       <div className="flex justify-center pt-2.5 shrink-0">
         <div className="bg-black/80 border border-yellow-400/35 rounded-2xl px-8 py-1.5 flex flex-col items-center shadow-[0_4px_20px_rgba(0,0,0,0.7)]">
           <span
@@ -86,15 +84,8 @@ const Home = () => {
         </div>
       </div>
 
-    
-
-
-
-
+      {/* PROFILE ROW */}
       <div className="flex items-center gap-2 px-3 shrink-0 mt-1 py-1.5">
-    
-
-
         <div
           className="relative shrink-0 cursor-pointer"
           onClick={() => setProfileOpen(true)}
@@ -109,7 +100,6 @@ const Home = () => {
           </div>
         </div>
 
-      
         <div className="flex-1 flex flex-col gap-0.5">
           <span className="text-white font-extrabold text-[15px]">
             {stateLoading ? '...' : playerName}
@@ -127,9 +117,6 @@ const Home = () => {
           </div>
         </div>
 
-        
-
-
         <button
           onClick={(e) => { e.stopPropagation(); setWithdrawOpen(true); }}
           className="shrink-0 bg-gradient-to-b from-[#f0a800] to-[#c87800] border-2 border-[#8a5500] rounded-[20px] px-4 py-1.5 text-black font-black text-[13px] tracking-[0.05em] uppercase cursor-pointer shadow-[0_3px_8px_rgba(175,135,0,0.6)]"
@@ -138,8 +125,8 @@ const Home = () => {
         </button>
       </div>
 
-    
-            <div className="flex items-center justify-center gap-2 shrink-0 px-3 py-0.5">
+      {/* BALANCE */}
+      <div className="flex items-center justify-center gap-2 shrink-0 px-3 py-0.5">
         <img src={coinImage} alt="fa" className="w-[30px] h-[30px] object-contain" />
         <span
           className="text-white font-black tracking-[0.06em]"
@@ -152,8 +139,7 @@ const Home = () => {
         </span>
       </div>
 
-      
-
+      {/* RATES */}
       <div className="flex items-center justify-center gap-2.5 shrink-0 mt-0.5">
         <div className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-b from-[#5ecb1a] to-[#3a9010] border border-[#2a6a08] shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
           <span className="text-white font-black text-[12px] whitespace-nowrap">
@@ -169,21 +155,19 @@ const Home = () => {
         </div>
       </div>
 
-    
-                              <div className="flex-1 min-h-0 mt-0.5">
+      {/* BATTLE — takes all remaining space above SnackBar */}
+      <div className="flex-1 min-h-0 mt-0.5">
         <BattleLayout />
       </div>
 
-    
-
-
-
-      <div className="shrink-0">
+      {/* BOTTOM BUTTONS — padded so SnackBar doesn't cover them */}
+      <div className="shrink-0 pb-[62px]">
         <HomeBottomButtons />
       </div>
 
       <UserProfile  isOpen={profileOpen}  onClose={() => setProfileOpen(false)} />
       <BalanceModal isOpen={withdrawOpen} onClose={() => setWithdrawOpen(false)} />
+      <SnackBar />
     </div>
   );
 };

@@ -1,71 +1,90 @@
-import React from "react";
-import betonBanner from "../assets/page22Images/beton-banner.webp";
-import faIcon from "../assets/page22Images/fa-icon.webp";
+import React from "react"
+import betonBanner from "../assets/page22Images/beton-banner.webp"
+import faIcon      from "../assets/page22Images/fa-icon.webp"
 
 const BetonCard = () => {
   return (
-    <div className="bg-gradient-to-b from-[#201e10] to-[#141408] rounded-[10px] px-2 py-[5px] mb-[5px] flex flex-col shrink-0">
-      
-      {/* Section title */}
-      <p className="text-white font-bold text-[12px] text-center mb-1">
+    <div className="bg-gradient-to-b from-[#201e10] to-[#141408] rounded-[10px] px-2 py-[3px] mb-[5px] flex flex-col shrink-0">
+
+      <p className="text-white font-bold text-[11px] text-center mb-0.5">
         Особенные бонусы
       </p>
 
-      {/* Yellow bordered card */}
       <div className="w-full rounded-[10px] border-2 border-[#e8ff01] overflow-hidden bg-gradient-to-b from-[#2a1e00] to-[#1a1200] shadow-[0_3px_14px_rgba(0,0,0,0.8)] flex flex-col">
 
-        {/* Banner — centered, not stretched */}
-        <div className="flex justify-center items-center py-2 px-4">
+        {/* Banner — slightly larger */}
+        <div className="flex justify-center items-center pt-1.5 pb-1 px-4">
           <img
             src={betonBanner}
             alt="BETON"
-            className="h-[52px] w-auto object-contain block"
+            className="object-contain block"
+            style={{ width: '70%', height: 'auto', maxHeight: 44 }}
           />
         </div>
 
-        {/* ДАЕТ МЕГА БОНУС (80%) + 100FS (20%) */}
-        <div className="flex items-center px-3 pb-[4px]">
-          <span className="w-[80%] font-black text-[clamp(18px,5.5vw,24px)] text-[#53a00d] leading-[1.1]">
+        {/* ДАЕТ МЕГА БОНУС + 100FS */}
+        <div className="flex items-center px-3 pb-[2px]">
+          <span
+            className="font-black text-[#53a00d] leading-none"
+            style={{ width: '80%', fontSize: 'clamp(16px,5vw,22px)' }}
+          >
             ДАЕТ МЕГА БОНУС
           </span>
-          <span className="w-[20%] font-black text-[clamp(14px,4vw,18px)] text-white text-right leading-[1.1]">
+          <span
+            className="font-black text-white text-right leading-none"
+            style={{ width: '20%', fontSize: 'clamp(13px,3.8vw,18px)' }}
+          >
             +100FS
           </span>
         </div>
 
-        {/* Row 1: 1B */}
-        <div className="flex items-center gap-[8px] px-3 py-[5px] border-t border-white/10">
-          <span className="font-black text-[clamp(22px,6.5vw,28px)] text-white leading-none min-w-[52px]">
+        {/* Row 1: 1B — gap-[3px] so coin is close */}
+        <div className="flex items-center px-3 py-[3px] border-t border-white/10">
+          <span
+            className="font-black text-white leading-none"
+            style={{ fontSize: 'clamp(18px,5.5vw,24px)', minWidth: 44 }}
+          >
             1B
           </span>
           <img
             src={faIcon}
             alt=""
-            className="w-[26px] h-[26px] rounded-full object-cover shrink-0"
+            className="rounded-full object-cover shrink-0"
+            style={{ width: 24, height: 24, marginLeft: 2, marginRight: 6 }}
           />
-          <span className="text-[#c8e800] font-bold text-[clamp(10px,3vw,13px)] leading-tight">
+          <span
+            className="text-[#c8e800] font-bold leading-tight"
+            style={{ fontSize: 'clamp(10px,2.8vw,13px)' }}
+          >
             За подписку на канал BETON
           </span>
         </div>
 
-        {/* Row 2: 100B */}
-        <div className="flex items-center gap-[8px] px-3 py-[5px] pb-[8px]">
-          <span className="font-black text-[clamp(22px,6.5vw,28px)] text-[#c8e800] leading-none min-w-[52px]">
+        {/* Row 2: 100B — same tight spacing */}
+        <div className="flex items-center px-3 py-[3px] pb-[6px]">
+          <span
+            className="font-black text-[#c8e800] leading-none"
+            style={{ fontSize: 'clamp(18px,5.5vw,24px)', minWidth: 44 }}
+          >
             100B
           </span>
           <img
             src={faIcon}
             alt=""
-            className="w-[26px] h-[26px] rounded-full object-cover shrink-0"
+            className="rounded-full object-cover shrink-0"
+            style={{ width: 24, height: 24, marginLeft: 2, marginRight: 6 }}
           />
-          <span className="text-[#c8e800] font-bold text-[clamp(10px,3vw,13px)] leading-tight">
+          <span
+            className="text-[#c8e800] font-bold leading-tight"
+            style={{ fontSize: 'clamp(10px,2.8vw,13px)' }}
+          >
             За первый депозит
           </span>
         </div>
 
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default BetonCard;
+export default BetonCard

@@ -126,13 +126,13 @@ const CharacterCard = ({ charKey, charData, onUpgrade, upgrading }) => {
 
     if (state === 'timer') return (
       <div className={`${pillBase} ${cfg.btnClass}`}>
-        ⏳ Осталось {fmtTimer(cooldownSecs)}
+        Осталось {fmtTimer(cooldownSecs)}
       </div>
     )
 
     return (
       <div className={`${pillBase} bg-black/10 border-black/20 text-[#444]`}>
-        ✅ Максимум
+        Максимум
       </div>
     )
   }
@@ -188,10 +188,10 @@ const Page14 = () => {
     setUpgradingKey(key)
     try {
       await dispatch(doUpgradeCharacter(key)).unwrap()
-      setMsg({ ok: true, text: `✅ ${CHARS[key]?.name} улучшен!` })
+      setMsg({ ok: true, text: `${CHARS[key]?.name} улучшен!` })
       dispatch(fetchState())
     } catch (e) {
-      setMsg({ ok: false, text: `❌ ${e}` })
+      setMsg({ ok: false, text: `${e}` })
     }
     setUpgradingKey(null)
     setTimeout(() => setMsg(null), 3000)
@@ -207,7 +207,7 @@ const Page14 = () => {
         fontFamily: "'Nunito','Segoe UI',sans-serif",
       }}
     >
-      {/* SNACKBAR — absolute, always on top, never shifts layout */}
+      {/* SNACKBAR */}
       {msg && (
         <div
           className={`absolute top-2 left-3 right-3 z-[9999] rounded-xl px-3 py-2 text-center font-black text-[13px] text-white border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.6)] pointer-events-none ${
@@ -218,7 +218,7 @@ const Page14 = () => {
         </div>
       )}
 
-      {/* HEADER — tighter padding */}
+      {/* HEADER */}
       <div className="shrink-0 flex flex-col items-center pt-2 pb-0.5 bg-gradient-to-b from-black to-transparent">
         <span className="text-white font-black text-[14px] tracking-[0.15em] uppercase">
           DRUN FAMILY
@@ -230,7 +230,7 @@ const Page14 = () => {
         </div>
       </div>
 
-      {/* TABS — tighter */}
+      {/* TABS */}
       <div className="shrink-0 flex items-center px-5 pt-1.5 gap-8">
         {['ПЕРСОНАЖИ', 'УЛУЧШЕНИЯ'].map((tab, i) => (
           <button
@@ -247,7 +247,7 @@ const Page14 = () => {
         ))}
       </div>
 
-      {/* PROGRESS BAR — tighter */}
+      {/* PROGRESS BAR */}
       <div className="shrink-0 flex items-center gap-2 px-5 pt-1.5">
         <div className="shrink-0 relative w-8 h-8 flex items-center justify-center">
           <div className="w-6 h-6 bg-gradient-to-br from-[#ffe033] via-[#f0c020] to-[#c89000] border-2 border-[#8a6000] rotate-45 shadow-[0_0_8px_rgba(240,192,32,0.6)]" />
@@ -274,16 +274,16 @@ const Page14 = () => {
         </div>
       </div>
 
-      {/* DESCRIPTION — tighter */}
+      {/* DESCRIPTION */}
       <div className="shrink-0 mx-3.5 mt-1.5 rounded-xl bg-black/70 border border-white/10 px-3 py-2">
         <p className="text-white/[0.82] font-semibold text-[11px] leading-relaxed text-center m-0">
           Улучшая персонажей, вы увеличиваете свой уровень. Каждый уровень даёт +2% ко всем доходам, а на последнем уровне станет доступен вывод средств.
         </p>
       </div>
 
-      {/* CARDS — scrollable, cards stay full size */}
+      {/* CARDS — min-h-0 makes flex child respect parent height, scroll only when needed */}
       <div
-        className="flex-1 overflow-y-auto overscroll-contain px-3.5 pt-2 pb-4 flex flex-col gap-2.5"
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3.5 pt-2 pb-24 flex flex-col gap-2.5"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {['drunstroy', 'ganzapad', 'sub5'].map((key) => (

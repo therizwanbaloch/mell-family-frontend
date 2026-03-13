@@ -331,7 +331,7 @@ const Page12 = () => {
 
           {/* TOP LEFT: FA coin + билеты → /page21 */}
           <div
-            onClick={() => navigate('/page21')}
+            onClick={() => navigate('/shop')}
             className="absolute top-2.5 left-2.5 z-20 flex items-center gap-1.5 rounded-2xl px-2.5 py-1.5 cursor-pointer active:scale-95 transition-transform"
             style={{ background: 'rgba(80,76,70,0.92)', border: '1.5px solid #666' }}
           >

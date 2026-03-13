@@ -141,19 +141,18 @@ const gameSlice = createSlice({
   },
 
   reducers: {
-    // ── clear any action error shown in UI ──
+    // clear any action error shown in UI
     clearActionError(state) {
       state.actionError = null
     },
 
-    // ── patch any fields on state.user without a full re-fetch ──
-    // Used by games (Page25, Page26) for optimistic balance updates.
+    // patch any fields on state.user without a full re-fetch
+    // Used by slots/games for optimistic balance updates.
     //
     // Usage:
+    //   dispatch(patchUser({ fa: newVal }))
     //   dispatch(patchUser({ chips: newVal }))
-    //   dispatch(patchUser({ usdt: newVal }))
     //   dispatch(patchUser({ chips: newChips, usdt: newUsdt }))
-    //
     patchUser(state, action) {
       if (state.user) {
         state.user = { ...state.user, ...action.payload }

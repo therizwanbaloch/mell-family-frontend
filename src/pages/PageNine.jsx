@@ -302,7 +302,7 @@ const PageNine = () => {
 
             {/* TOP LEFT: ticket count → /page21 (store) */}
             <div
-              onClick={() => navigate('/page21')}
+              onClick={() => navigate('/shop')}
               className="absolute top-3 left-3 z-20 flex items-center gap-2 rounded-2xl px-3 py-1.5 cursor-pointer active:scale-95 transition-transform"
               style={{ background: '#888784' }}
             >
@@ -314,6 +314,7 @@ const PageNine = () => {
                   : <Skel w="40px" h="18px" radius="4px" />
                 }
               </div>
+
               {/* + button → /page21 */}
               <button
                 className="flex items-center justify-center rounded-lg font-black text-white ml-1 text-lg leading-none"
@@ -431,7 +432,7 @@ const PageNine = () => {
         </button>
       </div>
 
-      {/* ── INFO MODAL (Page 11 tooltip) ──────────────────────── */}
+      
       <TournamentInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} endTs={endTs} />
     </div>
   )

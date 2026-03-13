@@ -71,15 +71,25 @@ const PricePill = ({ price, crossed, dark }) => (
   </div>
 );
 
+// Lock icon SVG — no emoji
+const LockIcon = () => (
+  <svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1" y="11" width="20" height="14" rx="3" fill="rgba(0,0,0,0.7)" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"/>
+    <path d="M6 11V7.5C6 4.46 8.24 2 11 2s5 2.46 5 5.5V11" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" fill="none"/>
+    <circle cx="11" cy="17" r="2.5" fill="rgba(255,255,255,0.55)"/>
+    <rect x="10" y="17" width="2" height="3.5" rx="1" fill="rgba(255,255,255,0.55)"/>
+  </svg>
+);
+
 // ── Page20 ───────────────────────────────────────────────────
 
 const Page20 = () => {
   const dispatch      = useDispatch();
   const user          = useSelector(s => s.game.user);
   const inventory     = useSelector(s => s.game.inventory);
-  const actionLoading = useSelector(s => s.game.actionLoading);
 
   const [msg, setMsg] = useState(null);
+  const [openingBox, setOpeningBox] = useState(null);
 
   const stars = user?.stars ?? 0;
 
@@ -93,38 +103,48 @@ const Page20 = () => {
   const pepeCount    = getBoxCount(inventory, user, 'pepe');
   const shneineCount = getBoxCount(inventory, user, 'shneine');
 
+  // All 3 boxes always shown; count=0 means locked
   const BOX_CONFIGS = [
-    { key: 'fa',      img: imgBoxFa,      label: 'Фа Бокс',     price: '10',  count: faCount,
+    {
+      key: 'fa',      img: imgBoxFa,      label: 'Фа Бокс',     price: '10',  count: faCount,
       cardBg: 'linear-gradient(180deg,#c8c8c8,#989898)', cardBorder: '#b0b0b0', cardShadow: '#707070',
-      footerBg: 'linear-gradient(180deg,#b0b0b0,#888)', footerBorder: '#707070', nameColor: 'text-black' },
-    { key: 'pepe',    img: imgBoxPepe,    label: 'Пепе Бокс',   price: '40',  count: pepeCount,
+      footerBg: 'linear-gradient(180deg,#b0b0b0,#888)', footerBorder: '#707070', nameColor: '#111',
+    },
+    {
+      key: 'pepe',    img: imgBoxPepe,    label: 'Пепе Бокс',   price: '40',  count: pepeCount,
       cardBg: 'linear-gradient(180deg,#3a8a10,#1a5a08)', cardBorder: '#5aba20', cardShadow: '#0d3a04',
-      footerBg: 'linear-gradient(180deg,#2a7a08,#1a5004)', footerBorder: '#0d3a04', nameColor: 'text-white' },
-    { key: 'shneine', img: imgBoxShneyne, label: 'Шнейне Бокс', price: '100', count: shneineCount,
+      footerBg: 'linear-gradient(180deg,#2a7a08,#1a5004)', footerBorder: '#0d3a04', nameColor: '#fff',
+    },
+    {
+      key: 'shneine', img: imgBoxShneyne, label: 'Шнейне Бокс', price: '100', count: shneineCount,
       cardBg: 'linear-gradient(180deg,#1a6010,#0a3a08)', cardBorder: '#5aba20', cardShadow: '#062004',
-      footerBg: 'linear-gradient(180deg,#0e4a08,#062004)', footerBorder: '#062004', nameColor: 'text-white' },
-  ].filter(b => b.count > 0);
+      footerBg: 'linear-gradient(180deg,#0e4a08,#062004)', footerBorder: '#062004', nameColor: '#fff',
+    },
+  ];
 
   // ── Handlers ─────────────────────────────────────────────
   const handleBuy = async (key, qty = 1, label = 'товар') => {
     const result = await dispatch(doStoreBuy({ key, qty }));
     if (doStoreBuy.fulfilled.match(result)) {
       await dispatch(fetchState());
-      showMsg(`✅ ${label} куплен!`, true);
+      showMsg(`${label} куплен!`, true);
     } else {
-      showMsg(`❌ ${result.payload || 'Ошибка покупки'}`, false);
+      showMsg(result.payload || 'Ошибка покупки', false);
     }
   };
 
-  const handleOpenBox = async (boxType, label = 'бокс') => {
-    const result = await dispatch(doOpenBox(boxType));
+  const handleOpenBox = async (box) => {
+    if (box.count === 0) return; // locked — do nothing
+    setOpeningBox(box.key);
+    const result = await dispatch(doOpenBox(box.key));
     if (doOpenBox.fulfilled.match(result)) {
       await dispatch(fetchState());
       const reward = result.payload?.reward;
-      showMsg(reward ? `🎁 ${label}: ${JSON.stringify(reward)}` : `🎁 ${label} открыт!`, true);
+      showMsg(reward ? `${box.label}: ${JSON.stringify(reward)}` : `${box.label} открыт!`, true);
     } else {
-      showMsg(`❌ ${result.payload || 'Ошибка открытия'}`, false);
+      showMsg(result.payload || 'Ошибка открытия', false);
     }
+    setTimeout(() => setOpeningBox(null), 600);
   };
 
   return (
@@ -137,37 +157,39 @@ const Page20 = () => {
         fontFamily: "'Nunito','Segoe UI',sans-serif",
       }}
     >
-      {/* SNACKBAR */}
+      {/* ── SNACKBAR ── */}
       {msg && (
-        <div className={`absolute top-2 left-3 right-3 z-[9999] rounded-xl px-3.5 py-2.5 text-center font-black text-[13px] text-white border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.5)] pointer-events-none ${
-          msg.ok ? 'bg-green-800/95' : 'bg-red-800/95'
-        }`}>
+        <div
+          className={`absolute top-2 left-3 right-3 z-[9999] rounded-xl px-3.5 py-2.5 text-center font-black text-[13px] text-white border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.5)] pointer-events-none transition-all ${
+            msg.ok ? 'bg-green-800/95' : 'bg-red-800/95'
+          }`}
+        >
           {msg.text}
         </div>
       )}
 
-      {/* HEADER */}
+      {/* ── HEADER ── */}
       <div
-        className="shrink-0 flex flex-col items-center pt-2 pb-1"
+        className="shrink-0 flex flex-col items-center pt-2 pb-1.5"
         style={{ background: 'linear-gradient(180deg,#c8c8c8,#a0a0a0)' }}
       >
         <span className="font-black text-black uppercase tracking-widest text-[11px]">DRUN FAMILY</span>
         <div className="flex items-center w-full px-4 my-0.5">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent to-black" />
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent to-black/60" />
           <span className="font-bold mx-2 uppercase text-black text-[8px] tracking-[0.3em]">GAME</span>
-          <div className="flex-1 h-px bg-gradient-to-l from-transparent to-black" />
+          <div className="flex-1 h-px bg-gradient-to-l from-transparent to-black/60" />
         </div>
-        {/* МАГАЗИН title */}
         <span
-          className="font-black uppercase text-[#c89000] tracking-[0.12em]"
+          className="font-black uppercase tracking-[0.12em]"
           style={{
             fontSize: 'clamp(28px,9vw,38px)',
-            textShadow: '0 2px 0 #8a6000, 0 0 24px rgba(200,144,0,0.5)',
+            color: '#c89000',
+            textShadow: '0 2px 0 #8a6000, 0 0 24px rgba(200,144,0,0.4)',
           }}
         >
           МАГАЗИН
         </span>
-        {/* Stars */}
+        {/* Stars balance — no store balance per requirements */}
         <div
           className="flex items-center gap-1 rounded-full px-3 py-0.5 mb-1 border border-[#8a6000]"
           style={{ background: 'linear-gradient(180deg,#f0c020,#c89000)' }}
@@ -176,31 +198,32 @@ const Page20 = () => {
         </div>
       </div>
 
-      {/* SCROLLABLE */}
+      {/* ── SCROLLABLE BODY ── */}
       <div
-        className="flex-1 overflow-y-auto overscroll-contain pb-20 px-2.5"
+        className="flex-1 overflow-y-auto overscroll-contain pb-24 px-2.5"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <SectionLabel>АКЦИИ</SectionLabel>
 
-        {/* ── ПАК ДРУНОВ — wide green banner ── */}
-        {/* Text left ~50%, image fills right half absolutely */}
+        {/* ── ПАК ДРУНОВ — full-width green banner ── */}
         <div
-          className="relative rounded-2xl overflow-hidden mb-2.5 border-2 border-[#5aba20]"
+          className="relative rounded-2xl overflow-hidden mb-2.5 border-2 border-[#5aba20] active:scale-[0.98] transition-transform cursor-pointer"
           style={{
             height: 160,
-            background: 'linear-gradient(135deg,#2a8a10,#1a6008)',
+            background: 'linear-gradient(135deg,#2a8a10 0%,#1a6008 100%)',
+            boxShadow: '0 5px 0 #0a3004',
           }}
           onClick={() => handleBuy('pack_drun', 1, 'Пак Друнов')}
         >
-          {/* Red badge */}
+          {/* Red corner badge */}
           <div
-            className="absolute top-0 right-0 z-10 px-2 py-1 font-black text-white text-center leading-tight rounded-bl-2xl rounded-tr-2xl text-[9px]"
+            className="absolute top-0 right-0 z-10 px-2 py-1 font-black text-white text-center leading-tight rounded-bl-2xl rounded-tr-[14px] text-[9px] uppercase"
             style={{ background: 'linear-gradient(135deg,#dd1010,#aa0000)' }}
           >
             25 USDT В<br />ПОДАРОК
           </div>
-          {/* Left text block */}
+
+          {/* Left: text */}
           <div className="absolute inset-y-0 left-0 w-[50%] flex flex-col justify-between p-3 z-10">
             <div>
               <p
@@ -217,7 +240,8 @@ const Page20 = () => {
             </div>
             <PricePill price="321" />
           </div>
-          {/* Right image — fills right half, overflows top */}
+
+          {/* Right: person image fills & overflows top */}
           <div className="absolute right-0 top-0 w-[52%] h-full">
             <img
               src={imgPakDrunov}
@@ -227,16 +251,19 @@ const Page20 = () => {
           </div>
         </div>
 
-        {/* ── ВАТАФА + БИЗНЕС — 2 col ── */}
+        {/* ── ВАТАФА + БИЗНЕС — 2-col ── */}
         <div className="grid grid-cols-2 gap-2 mb-2.5">
 
-          {/* GREY — Ватафа */}
+          {/* Grey — Ватафа */}
           <div
-            className="relative rounded-2xl overflow-hidden border-2 border-[#272626] cursor-pointer"
-            style={{ height: 185, background: 'linear-gradient(180deg,#6e6e6e,#5a5a5a)' }}
+            className="relative rounded-2xl overflow-hidden border-2 border-[#272626] cursor-pointer active:scale-[0.97] transition-transform"
+            style={{
+              height: 185,
+              background: 'linear-gradient(180deg,#6e6e6e,#5a5a5a)',
+              boxShadow: '0 4px 0 #222',
+            }}
             onClick={() => handleBuy('pack_watafa', 1, 'Ватафа Пак')}
           >
-            {/* Text */}
             <div className="absolute inset-y-0 left-0 w-[55%] flex flex-col justify-between p-2.5 z-10">
               <div>
                 <p className="font-black text-yellow-300 uppercase leading-tight m-0 text-[13px]">
@@ -251,7 +278,6 @@ const Page20 = () => {
               </div>
               <PricePill price="249" crossed="777" />
             </div>
-            {/* Image — fills right half, person overflows top */}
             <div className="absolute right-0 top-0 w-[48%] h-full">
               <img
                 src={imgVatafaPak}
@@ -262,20 +288,22 @@ const Page20 = () => {
             </div>
           </div>
 
-          {/* BLUE — Бизнес */}
+          {/* Blue — Бизнес */}
           <div
-            className="relative rounded-2xl overflow-hidden border-2 border-[#272626] cursor-pointer"
-            style={{ height: 185, background: 'linear-gradient(180deg,#26a4e3,#1a7ab0)' }}
+            className="relative rounded-2xl overflow-hidden border-2 border-[#272626] cursor-pointer active:scale-[0.97] transition-transform"
+            style={{
+              height: 185,
+              background: 'linear-gradient(180deg,#26a4e3,#1a7ab0)',
+              boxShadow: '0 4px 0 #0e4a70',
+            }}
             onClick={() => handleBuy('pack_business', 1, 'Бизнес Пак')}
           >
-            {/* Red badge */}
             <div
-              className="absolute top-0 right-0 z-10 px-1.5 py-0.5 font-black text-white text-center leading-tight rounded-bl-xl rounded-tr-2xl text-[8px]"
+              className="absolute top-0 right-0 z-10 px-1.5 py-0.5 font-black text-white text-center leading-tight rounded-bl-xl rounded-tr-2xl text-[8px] uppercase"
               style={{ background: 'linear-gradient(135deg,#dd1010,#aa0000)' }}
             >
               САМОЕ<br />ВЫГОДНОЕ
             </div>
-            {/* Text */}
             <div className="absolute inset-y-0 left-0 w-[55%] flex flex-col justify-between p-2.5 z-10">
               <div>
                 <p className="font-black text-white uppercase leading-tight m-0 text-[13px]">
@@ -290,7 +318,6 @@ const Page20 = () => {
               </div>
               <PricePill price="666" />
             </div>
-            {/* Image */}
             <div className="absolute right-0 top-0 w-[48%] h-full">
               <img
                 src={imgBiznesPak}
@@ -302,28 +329,33 @@ const Page20 = () => {
           </div>
         </div>
 
-        {/* ── VIP GOLD — wide banner ── */}
+        {/* ── VIP GOLD — full-width banner ── */}
         <div
-          className="relative rounded-2xl overflow-hidden mb-2.5 border-2 border-[#372505] shadow-[0_5px_0_#372505] cursor-pointer"
-          style={{ height: 160, background: 'linear-gradient(90deg,#ffc500,#ffad31)' }}
+          className="relative rounded-2xl overflow-hidden mb-2.5 border-2 border-[#7a4000] cursor-pointer active:scale-[0.98] transition-transform"
+          style={{
+            height: 160,
+            background: 'linear-gradient(90deg,#ffc500,#ffad31)',
+            boxShadow: '0 5px 0 #372505',
+          }}
           onClick={() => handleBuy('pack_burmulda', 1, 'VIP Бурмулда Пак')}
         >
-          {/* Text */}
-          <div className="absolute inset-y-0 left-0 w-[65%] flex flex-col justify-between p-3 z-10">
+          <div className="absolute inset-y-0 left-0 w-[62%] flex flex-col justify-between p-3 z-10">
             <div>
-              <p className="font-black text-black uppercase leading-none m-0" style={{ fontSize: 'clamp(20px,6vw,26px)' }}>
-                VIP<span className="text-[15px]"> БУРМУЛДА ПАК</span>
+              <p
+                className="font-black text-black uppercase leading-tight m-0"
+                style={{ fontSize: 'clamp(18px,5.5vw,24px)' }}
+              >
+                VIP <span style={{ fontSize: 'clamp(13px,4vw,17px)' }}>БУРМУЛДА ПАК</span>
               </p>
-              <p className="text-black/75 font-semibold leading-snug mt-1.5 text-[10px] m-0">
-                x2 вся прибыль на 6 дней, 61666 билетов в<br />
-                начале каждого турнира, 166 очков DRUN<br />
-                ROAD, 6166 фишек, 16 шнейне боксов
+              <p className="text-black/70 font-semibold leading-snug mt-1.5 text-[9.5px] m-0">
+                x2 вся прибыль на 6 дней, 61666 билетов<br />
+                в начале каждого турнира, 166 очков<br />
+                DRUN ROAD, 6166 фишек, 16 шнейне боксов
               </p>
             </div>
             <PricePill price="1666" dark />
           </div>
-          {/* Image — person overflows top */}
-          <div className="absolute right-0 bottom-0 w-[38%]" style={{ height: '130%' }}>
+          <div className="absolute right-0 bottom-0 w-[40%]" style={{ height: '130%' }}>
             <img
               src={imgVipPak}
               alt="VIP Бурмулда Пак"
@@ -332,61 +364,95 @@ const Page20 = () => {
           </div>
         </div>
 
-        {/* ── БОКСЫ — only if user owns any ── */}
-        {BOX_CONFIGS.length > 0 && (
-          <>
-            <SectionLabel>БОКСЫ</SectionLabel>
-            <div
-              className={`mb-6 gap-2.5 ${
-                BOX_CONFIGS.length === 1
-                  ? 'flex justify-center'
-                  : BOX_CONFIGS.length === 2
-                    ? 'grid grid-cols-2'
-                    : 'grid grid-cols-3'
-              }`}
-            >
-              {BOX_CONFIGS.map((box) => (
-                <div
-                  key={box.key}
-                  className="rounded-2xl overflow-hidden flex flex-col cursor-pointer active:scale-95 transition-transform"
-                  style={{
-                    background: box.cardBg,
-                    border: `2px solid ${box.cardBorder}`,
-                    boxShadow: `0 4px 0 ${box.cardShadow}`,
-                    maxWidth: BOX_CONFIGS.length === 1 ? 140 : undefined,
-                  }}
-                  onClick={() => handleOpenBox(box.key, box.label)}
-                >
-                  {/* Image — large, square area */}
-                  <div className="flex items-center justify-center p-3 pb-1">
-                    <img
-                      src={box.img}
-                      alt={box.label}
-                      className="w-full object-contain"
-                      style={{ height: 90 }}
-                    />
-                  </div>
-                  {/* Footer */}
-                  <div
-                    className="flex flex-col items-center gap-1.5 py-2 px-1"
-                    style={{
-                      background: box.footerBg,
-                      borderTop: `1.5px solid ${box.footerBorder}`,
-                    }}
-                  >
-                    <p className={`${box.nameColor} font-black text-center text-[12px] m-0`}>
-                      {box.label}
-                    </p>
-                    {box.count > 1 && (
-                      <span className="text-white/60 font-bold text-[9px]">x{box.count}</span>
-                    )}
-                    <PricePill price={box.price} />
-                  </div>
+        {/* ── БОКСЫ — always shown; locked when count=0 ── */}
+        <SectionLabel>БОКСЫ</SectionLabel>
+
+        <div className="grid grid-cols-3 gap-2 mb-6">
+          {BOX_CONFIGS.map((box) => {
+            const locked   = box.count === 0;
+            const isOpening = openingBox === box.key;
+
+            return (
+              <div
+                key={box.key}
+                className="rounded-2xl overflow-hidden flex flex-col transition-transform"
+                style={{
+                  background: box.cardBg,
+                  border: `2px solid ${locked ? 'rgba(255,255,255,0.12)' : box.cardBorder}`,
+                  boxShadow: locked ? '0 4px 0 rgba(0,0,0,0.5)' : `0 4px 0 ${box.cardShadow}`,
+                  opacity: locked ? 0.72 : 1,
+                  cursor: locked ? 'default' : 'pointer',
+                  transform: isOpening ? 'scale(0.93)' : undefined,
+                  filter: locked ? 'saturate(0.45) brightness(0.7)' : undefined,
+                }}
+                onClick={() => !locked && handleOpenBox(box)}
+              >
+                {/* Image area */}
+                <div className="relative flex items-center justify-center p-3 pb-1">
+                  <img
+                    src={box.img}
+                    alt={box.label}
+                    className="w-full object-contain"
+                    style={{ height: 88 }}
+                  />
+
+                  {/* Lock overlay — only when locked */}
+                  {locked && (
+                    <div
+                      className="absolute inset-0 flex flex-col items-center justify-center gap-1"
+                      style={{ background: 'rgba(0,0,0,0.45)' }}
+                    >
+                      <LockIcon />
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          </>
-        )}
+
+                {/* Footer */}
+                <div
+                  className="flex flex-col items-center gap-1 py-2 px-1"
+                  style={{
+                    background: box.footerBg,
+                    borderTop: `1.5px solid ${locked ? 'rgba(255,255,255,0.08)' : box.footerBorder}`,
+                  }}
+                >
+                  <p
+                    className="font-black text-center text-[11px] m-0"
+                    style={{ color: locked ? 'rgba(255,255,255,0.4)' : box.nameColor }}
+                  >
+                    {box.label}
+                  </p>
+
+                  {/* Unlocked: show count if >1, then open price */}
+                  {!locked && (
+                    <>
+                      {box.count > 1 && (
+                        <span className="font-bold text-[9px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                          x{box.count}
+                        </span>
+                      )}
+                      <PricePill price={box.price} />
+                    </>
+                  )}
+
+                  {/* Locked: show buy price dimmed */}
+                  {locked && (
+                    <div
+                      className="flex items-center gap-1 rounded-full font-black px-2.5 py-0.5 border"
+                      style={{
+                        background: 'rgba(200,144,0,0.25)',
+                        borderColor: 'rgba(138,96,0,0.4)',
+                        fontSize: 11,
+                        color: 'rgba(255,200,0,0.45)',
+                      }}
+                    >
+                      {box.price} <span className="text-[12px]">☆</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
       </div>
 
