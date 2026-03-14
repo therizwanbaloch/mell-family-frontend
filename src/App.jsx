@@ -29,10 +29,8 @@ function App() {
 
   const tg = useTelegram();
 
-  // Allow:
-  // 1. Local dev (npm run dev)
-  // 2. Inside Telegram (has initData)
-  // 3. Vercel preview/production URLs
+
+  
   const isDev             = import.meta.env.DEV;
   const isInsideTelegram  = Boolean(tg?.initData);
   const isVercel          = typeof window !== "undefined" &&
