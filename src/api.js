@@ -4,6 +4,7 @@
 
 // const BASE_URL  = 'http://localhost:8000'
 const BASE_URL  = 'https://mell-family-backend.onrender.com'
+// const BASE_URL  = 'https://mell-family-backend-production.up.railway.app'
 const TOKEN_KEY = 'mell_api_token'
 const DEV_USER_ID = 999999
 

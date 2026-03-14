@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import Page8Modal from "./Page8Modal";   // ← correct import
+import Page8Modal from "./Page8Modal";
 
 import imgUSDTCoin   from "../assets/page1to6Images/usdt.webp";
 import imgFishki     from "../assets/page1to6Images/OaIcon.webp";
@@ -28,7 +28,6 @@ const BalanceModal = ({ isOpen, onClose }) => {
   const [tab,          setTab]          = useState('balance');
   const [currency,     setCurrency]     = useState('usdt');
   const [showHowTo,    setShowHowTo]    = useState(false);
-  // ── Does NOT close BalanceModal — Page8Modal opens on top ──
   const [showPage8,    setShowPage8]    = useState(false);
   const navigate = useNavigate();
 
@@ -73,7 +72,6 @@ const BalanceModal = ({ isOpen, onClose }) => {
         }
       `}</style>
 
-      {/* BalanceModal — z-50, stays mounted always */}
       <div
         onClick={onClose}
         className={`fixed inset-0 z-50 flex items-end justify-center transition-all duration-300
@@ -85,7 +83,9 @@ const BalanceModal = ({ isOpen, onClose }) => {
             transition-transform duration-[380ms] ease-[cubic-bezier(0.32,0.72,0,1)]
             ${animateIn ? 'translate-y-0' : 'translate-y-full'}`}
           style={{
-            height: 'min(60dvh, 520px)',
+            /* ── KEY FIX: extra bottom padding so content clears the SnackBar ── */
+            paddingBottom: '70px',
+            maxHeight: 'calc(85dvh - 70px)',
             minHeight: '420px',
             background: 'linear-gradient(180deg,#3a7a1a 0%,#2d6010 100%)',
             border: '1.5px solid #4a9a20',
@@ -105,7 +105,7 @@ const BalanceModal = ({ isOpen, onClose }) => {
             </button>
           </div>
 
-          <div className="flex-1 flex flex-col px-3 pb-3 overflow-hidden">
+          <div className="flex-1 flex flex-col px-3 pb-3 overflow-y-auto">
 
             {/* TAB 1: BALANCE */}
             {tab === 'balance' && (
@@ -172,19 +172,22 @@ const BalanceModal = ({ isOpen, onClose }) => {
                   </div>
                 )}
 
+                {/* Withdraw button */}
                 <button
                   disabled={isUSDT ? !canWithdrawUsdt : !canWithdrawChips}
                   className="w-full py-3 rounded-2xl font-black text-base active:scale-95 transition-transform mt-auto"
                   style={{
-                    background: (isUSDT ? canWithdrawUsdt : canWithdrawChips) ? isUSDT ? 'linear-gradient(180deg,#d0d0d0,#a0a0a0)' : 'linear-gradient(180deg,#f0c020,#d4a000)' : 'rgba(100,100,100,0.4)',
-                    border: '2px solid #888',
-                    boxShadow: (isUSDT ? canWithdrawUsdt : canWithdrawChips) ? '0 4px 0 #444' : 'none',
+                    background: isUSDT
+                      ? 'linear-gradient(180deg,#d0d0d0,#a0a0a0)'   /* grey for USDT */
+                      : 'linear-gradient(180deg,#f0c020,#c89000)',   /* gold for chips */
+                    border: isUSDT ? '2px solid #888' : '2px solid #8a6000',
+                    boxShadow: isUSDT ? '0 4px 0 #555' : '0 4px 0 #6a4000',
                     cursor: (isUSDT ? canWithdrawUsdt : canWithdrawChips) ? 'pointer' : 'not-allowed',
                     opacity: (isUSDT ? canWithdrawUsdt : canWithdrawChips) ? 1 : 0.5,
-                    color: (isUSDT ? canWithdrawUsdt : canWithdrawChips) ? '#000' : '#888',
+                    color: '#000',
                   }}
                 >
-                  {(isUSDT ? canWithdrawUsdt : canWithdrawChips) ? 'Вывести деньги' : `Нужно ещё ${isUSDT ? `${usdtRemaining}$` : fmtChips(chipsRemaining)}`}
+                  Вывести деньги
                 </button>
               </div>
             )}
@@ -197,14 +200,12 @@ const BalanceModal = ({ isOpen, onClose }) => {
                     img: imgSlots, title: 'Слоты',
                     desc: 'Шанс на выигрыш USDT, монеты и Casino фишки',
                     btn: 'Слот',
-                    // closes BalanceModal, goes to page
                     action: () => { onClose(); navigate('/page24'); }
                   },
                   {
                     img: imgTournament, title: 'Турниры',
                     desc: 'Бери участие в турнире и получи шанс выиграть много USDT',
                     btn: 'Турнир',
-                    // ── KEY: NO onClose() here — BalanceModal stays open ──
                     action: () => setShowPage8(true)
                   },
                   {
@@ -238,12 +239,6 @@ const BalanceModal = ({ isOpen, onClose }) => {
         </div>
       </div>
 
-      {/*
-        Page8Modal renders HERE — inside BalanceModal's return
-        z-60 sits above BalanceModal's z-50
-        Closing Page8Modal just sets showPage8=false
-        BalanceModal stays fully mounted and visible underneath
-      */}
       <Page8Modal isOpen={showPage8} onClose={() => setShowPage8(false)} />
     </>
   );
