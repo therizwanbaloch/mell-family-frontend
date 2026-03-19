@@ -2,7 +2,9 @@
 @import "tailwindcss";
 
 
-
+* {
+  font-family: 'Days One', 'Nunito', sans-serif;
+}
 
 
 .font-days {

@@ -64,7 +64,7 @@ const Page13Modal = ({ isOpen, onClose }) => {
       />
 
       <div
-        className={`fixed bottom-0 left-1/2 z-50 h-[80vh] max-w-[430px] w-full mx-[4px] flex flex-col rounded-t-3xl bg-[#545454] border-2 border-black shadow-2xl transform transition-transform duration-[380ms] ease-[cubic-bezier(0.32,0.72,0,1)] ${
+        className={`fixed bottom-0 left-1/2 z-50 h-[65vh] max-w-[430px] w-full mx-[4px] flex flex-col rounded-t-3xl bg-[#545454] border-2 border-black shadow-2xl transform transition-transform duration-[380ms] ease-[cubic-bezier(0.32,0.72,0,1)] ${
           animIn ? "translate-y-0 -translate-x-1/2" : "translate-y-full -translate-x-1/2"
         }`}
       >

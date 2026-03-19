@@ -53,7 +53,7 @@ const TournamentInfoModal = ({ isOpen, onClose }) => {
           transition-transform duration-[380ms] ease-[cubic-bezier(0.32,0.72,0,1)]
           ${animateIn ? 'translate-y-0' : 'translate-y-full'}`}
         style={{
-          height: '83vh',
+          height: '65vh',
           maxWidth: '430px',
           margin: '0 auto',
           background: '#545454', 
