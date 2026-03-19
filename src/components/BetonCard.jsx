@@ -13,11 +13,16 @@ const BetonCard = () => {
       <div className="w-full rounded-[10px] border-4 border-[#e8ff01] overflow-hidden bg-gradient-to-b from-[#2a1e00] to-[#1a1200] shadow-[0_3px_14px_rgba(0,0,0,0.8)] flex flex-col">
 
         {/* ── IMAGE SECTION ── */}
-        <div className="w-full px-1 py-1">
+        <div className="w-full px-1 py-1 flex justify-center items-center">
           <img
             src={betonBanner}
             alt="BETON"
-            className="w-full h-9 block object-cover" 
+            className="w-100" 
+            style={{ 
+              height: "120", 
+              maxHeight: "42px",  
+              display: "block"
+            }} 
           />
         </div>
 
@@ -61,9 +66,8 @@ const BetonCard = () => {
           </div>
         </div>
 
-        {/* ── 100B LINE (Vertical Padding Removed to Close the Gap) ── */}
+        {/* ── 100B LINE ── */}
         <div className="flex gap-0 items-center px-3 pb-[8px]"> 
-          {/* py-[4px] removed to kill space between 1B and 100B */}
           <span
             className="font-black text-[#c8e800] leading-none"
             style={{ fontSize: 'clamp(18px,5.5vw,24px)', minWidth: 'fit-content' }}

@@ -137,7 +137,7 @@ const PageTen = () => {
       <div className="shrink-0 relative rounded-[18px] overflow-hidden" style={{ margin: '-4px clamp(10px,3vw,16px) 0', border: '2px solid #c9940a', boxShadow: '0 4px 24px rgba(201,148,10,0.35)' }}>
         <img src={heroBg} alt="Hero" className="w-full block object-cover object-top" style={{ height: 'clamp(160px,38vw,220px)' }} />
 
-        <div onClick={() => navigate('/page21')} className="absolute top-1 left-1 flex items-center gap-1.5 rounded-xl cursor-pointer active:scale-95 transition-transform" style={{ background: '#888784', border: '2px solid #000', padding: '5px 10px' }}>
+        <div onClick={() => navigate('/shop')} className="absolute top-1 left-1 flex items-center gap-1.5 rounded-xl cursor-pointer active:scale-95 transition-transform" style={{ background: '#888784', border: '2px solid #000', padding: '5px 10px' }}>
           <img src={ticketIcon} alt="ticket" className="w-[30px] h-[30px] object-contain" />
           <div className="flex flex-col items-start leading-none">
             <span className="text-white/60 font-bold uppercase" style={{ fontSize: 9, letterSpacing: '0.1em' }}>БИЛЕТЫ</span>
