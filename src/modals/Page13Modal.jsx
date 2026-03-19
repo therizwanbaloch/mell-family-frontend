@@ -45,29 +45,24 @@ const Page13Modal = ({ isOpen, onClose }) => {
     if (isOpen) {
       setVisible(true);
       requestAnimationFrame(() => requestAnimationFrame(() => setAnimIn(true)));
-      document.body.style.overflow = 'hidden';
     } else {
       setAnimIn(false);
-      document.body.style.overflow = '';
       const t = setTimeout(() => setVisible(false), 380);
       return () => clearTimeout(t);
     }
-    return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
   if (!visible) return null;
 
   return (
     <>
-      {/* Backdrop */}
       <div
         onClick={onClose}
-        className={`fixed inset-0 z-[100] transition-all duration-300 ${
-          animIn ? "bg-black/80 backdrop-blur-[2px]" : "bg-black/0"
+        className={`fixed inset-0 z-[100] transition-opacity duration-300 ${
+          animIn ? "bg-black/80 backdrop-blur-[2px]" : "opacity-0"
         }`}
       />
 
-      {/* Modal Container */}
       <div
         onClick={(e) => e.stopPropagation()}
         className={`fixed bottom-0 left-1/2 z-[101] flex flex-col rounded-t-[32px] bg-[#4a4a4a] border-t-2 border-x-2 border-black shadow-2xl transition-transform duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] ${
@@ -76,70 +71,65 @@ const Page13Modal = ({ isOpen, onClose }) => {
         style={{
           width: 'calc(100% - 8px)',
           maxWidth: '422px',
-          height: '75dvh', // Dynamic height for both OS
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)'
+          height: '70dvh', // Fixed consistent height
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)'
         }}
       >
-        {/* Drag handle */}
-        <div className="flex justify-center pt-3 pb-1 shrink-0">
-          <div className="w-10 h-1.5 rounded-full bg-white/20" />
+        {/* Handle */}
+        <div className="flex justify-center pt-3 shrink-0">
+          <div className="w-10 h-1 rounded-full bg-white/10" />
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 px-4 pb-2 flex flex-col overflow-hidden">
+        <div className="flex-1 px-4 py-2 flex flex-col overflow-hidden">
           
-          {/* Header/Close Row */}
-          <div className="flex justify-end mb-2 shrink-0">
+          {/* Close Button */}
+          <div className="flex justify-end mb-2">
             <button
               onClick={onClose}
-              className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-black font-black text-[11px] bg-[#b4b4b4] border border-black shadow-[0_2px_0_#000]"
+              className="flex items-center gap-1 rounded-lg px-2.5 py-1 text-black font-black text-[10px] bg-[#b4b4b4] border border-black"
             >
               <span>❌</span> Закрыть
             </button>
           </div>
 
-          {/* Timer Card */}
-          <div className="rounded-2xl flex flex-col items-center justify-center py-3 mb-3 border-2 border-[#da9d01] bg-black shrink-0 shadow-[0_0_15px_rgba(218,157,1,0.1)]">
-            <p className="text-[#888] font-black text-[9px] tracking-[0.2em] mb-1">ОСТАЛОСЬ</p>
-            <p className="font-days font-black text-white text-[28px] leading-none tabular-nums tracking-tighter">
+          {/* Timer Section */}
+          <div className="rounded-2xl flex flex-col items-center justify-center py-2 mb-2 border-2 border-[#da9d01] bg-black shrink-0">
+            <p className="text-[#888] font-black text-[8px] tracking-[0.2em]">ОСТАЛОСЬ</p>
+            <p className="font-days font-black text-white text-[22px] leading-none tabular-nums">
               {countdown}
             </p>
           </div>
 
-          {/* Info Description */}
-          <div className="rounded-xl px-3 py-3 mb-3 bg-[#333] border border-white/5 shrink-0">
-            <p className="text-white text-center text-[11px] leading-relaxed font-medium">
+          {/* Description */}
+          <div className="rounded-xl px-3 py-2 mb-2 bg-[#333] border border-white/5 shrink-0">
+            <p className="text-white text-center text-[10px] leading-tight opacity-90">
               Каждые две недели проходит огромный турнир. Все билеты зачисляются в ставку. По истечению таймера 90% билетов сгорают, а победители получают награды:
             </p>
           </div>
 
-          {/* Prize Table - SCROLLABLE area */}
-          <div className="flex-1 overflow-y-auto rounded-xl bg-[#2d2d2d] border border-black/50 no-scrollbar">
-            <div className="px-3">
-              {PRIZES.map((row, i) => (
-                <div
-                  key={i}
-                  className={`flex justify-between items-center py-3 ${i !== PRIZES.length - 1 ? 'border-b border-white/5' : ''}`}
+          {/* Table Container - Fits everything without scrolling */}
+          <div className="flex-1 flex flex-col justify-between rounded-xl bg-[#2d2d2d] p-2 border border-black/40">
+            {PRIZES.map((row, i) => (
+              <div
+                key={i}
+                className={`flex justify-between items-center px-1 flex-1 ${i !== PRIZES.length - 1 ? 'border-b border-white/5' : ''}`}
+              >
+                <span className="text-[#eee] font-bold" style={{ fontSize: 'clamp(10px, 2.5dvh, 12px)' }}>
+                  {row.place}
+                </span>
+                <span
+                  className="font-black"
+                  style={{ 
+                    fontSize: 'clamp(10px, 2.5dvh, 12px)',
+                    color: row.reward === "0 USDT" ? "#666" : "#E1BB2A" 
+                  }} 
                 >
-                  <span className="text-[#eee] font-bold text-[12px]">{row.place}</span>
-                  <span
-                    className="text-[12px] font-black"
-                    style={{ color: row.reward === "0 USDT" ? "#666" : "#E1BB2A" }} 
-                  >
-                    {row.reward}
-                  </span>
-                </div>
-              ))}
-            </div>
+                  {row.reward}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* Global styles for the scrollbar and font */}
-        <style>{`
-          .no-scrollbar::-webkit-scrollbar { display: none; }
-          .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-          .font-days { font-family: 'Days One', sans-serif; }
-        `}</style>
       </div>
     </>
   );

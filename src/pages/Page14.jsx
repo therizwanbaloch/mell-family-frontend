@@ -178,8 +178,12 @@ const Page14 = () => {
 
   return (
     <div
-      className="w-full h-dvh flex flex-col overflow-hidden relative"
-      style={{ backgroundImage: `url(${pageBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+      className="fixed inset-0 w-full h-full flex flex-col overflow-hidden"
+      style={{ 
+        backgroundImage: `url(${pageBg})`, 
+        backgroundSize: 'cover', 
+        backgroundPosition: 'center',
+      }}
     >
       {/* FLOATING TOAST */}
       <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[10000] w-[85%] transition-all duration-500 ease-out transform ${msg ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-90 pointer-events-none'}`}>
@@ -190,7 +194,7 @@ const Page14 = () => {
         </div>
       </div>
 
-      {/* HEADER - PAGE 15 STYLE */}
+      {/* HEADER - No Logic Change */}
       <div className="shrink-0 border-white/10 px-4 pt-3 pb-4 space-y-3" style={{ background: '#dbdbdb' }}>
         <div className="flex justify-center overflow-hidden mx-auto" style={{ width: 160, height: 41, position: 'relative' }}>
           <img src={logoDark} alt="Logo" style={{ position: 'absolute', width: 266, height: 'auto', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
@@ -220,22 +224,35 @@ const Page14 = () => {
         </p>
       </div>
 
-      {/* LIST */}
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 pb-36 flex flex-col gap-3">
-        {['drunstroy', 'ganzapad', 'sub5'].map((key) => (
-          <CharacterCardWrapper
-            key={key}
-            charKey={key}
-            charData={characters?.[key] ?? null}
-            userFa={userFa}
-            onUpgrade={handleUpgrade}
-            upgrading={upgradingKey === key}
-            setMsg={setMsg}
+      {/* SCROLLABLE BODY - Using fixed positioning logic for iOS */}
+      <div className="flex-1 overflow-y-auto no-scrollbar overscroll-contain px-4">
+        <div className="flex flex-col gap-3 py-2">
+          {['drunstroy', 'ganzapad', 'sub5'].map((key) => (
+            <CharacterCardWrapper
+              key={key}
+              charKey={key}
+              charData={characters?.[key] ?? null}
+              userFa={userFa}
+              onUpgrade={handleUpgrade}
+              upgrading={upgradingKey === key}
+              setMsg={setMsg}
+            />
+          ))}
+          
+          {/* THE SPACER FIX: This pushes the list content through the bottom 40% of the screen */}
+          <div 
+            className="w-full shrink-0" 
+            style={{ height: 'calc(env(safe-area-inset-bottom, 20px) + 140px)' }} 
           />
-        ))}
+        </div>
       </div>
 
       <SnackBar />
+
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   )
 }
