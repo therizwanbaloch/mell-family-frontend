@@ -231,19 +231,18 @@ export default function Page26() {
         </div>
       </div>
 
-      {/* ── CONTROLS SECTION (Scaled down slightly more for better fit) ── */}
-      <div style={{ 
-        flex: 1, 
-        display: 'flex', 
-        flexDirection: 'column', 
-        padding: '0 10px 8px', 
-        gap: 5, 
-        overflow: 'hidden', 
-        transform: 'scale(0.96)', 
-        transformOrigin: 'top center',
-        marginTop: '-4px'
+      {/* ── CONTROLS SECTION ── */}
+      <div style={{
+        flex: '0 1 auto',       /* FIX: Takes only needed space, prevents stretching on iPhones */
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '0 10px 12px', 
+        gap: 8,                 
+        overflow: 'hidden',
+        minHeight: 0,
       }}>
-        
+
+        {/* Multiplier table */}
         <div style={{ flexShrink: 0, display: 'flex', gap: 4 }}>
           {multTable.map(({ step, mult }) => {
             const active = safeCount >= step;
@@ -256,6 +255,7 @@ export default function Page26() {
           })}
         </div>
 
+        {/* Status bar */}
         {(isOver || (isPlaying && safeCount > 0)) && (
           <div style={{ flexShrink: 0, borderRadius: 9, padding: '4px 10px', textAlign: 'center', fontWeight: 900, fontSize: 11, background: phase === 'won' ? 'rgba(10,50,4,0.97)' : phase === 'lost' ? 'rgba(60,4,4,0.97)' : 'rgba(10,40,4,0.9)', border: `1.5px solid ${phase === 'lost' ? '#cc1818' : G}`, color: phase === 'lost' ? '#ff5050' : '#7ade30' }}>
             {phase === 'won'  && `🎉 +${winAmount?.toLocaleString()} Фишек выиграно!`}
@@ -264,31 +264,68 @@ export default function Page26() {
           </div>
         )}
 
-        <div style={{ flex: 1, background: 'linear-gradient(180deg,#1e1e1e,#141414)', border: '1.5px solid #2a2a2a', borderRadius: 14, padding: '8px 10px', display: 'flex' }}>
+        {/* Main controls box */}
+        <div style={{
+          flexShrink: 0,        
+          background: 'linear-gradient(180deg,#1e1e1e,#141414)',
+          border: '1.5px solid #2a2a2a',
+          borderRadius: 14,
+          padding: '10px 10px',
+          display: 'flex',
+        }}>
           {!isOver ? (
             <div style={{ display: 'flex', gap: 9, width: '100%' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 8, flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <button onClick={() => adjustBet(-1)} disabled={isPlaying} style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(180deg,#333,#222)', border: '1.5px solid #555', color: '#fff', fontWeight: 900, fontSize: 20, opacity: isPlaying ? 0.3 : 1 }}>−</button>
+                  <button onClick={() => adjustBet(-1)} disabled={isPlaying} style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(180deg,#333,#222)', border: '1.5px solid #555', color: '#fff', fontWeight: 900, fontSize: 20, opacity: isPlaying ? 0.3 : 1, flexShrink: 0 }}>−</button>
                   <span style={{ color: '#fff', fontWeight: 900, textAlign: 'center', minWidth: 55, fontSize: '18px' }}>{bet.toLocaleString()}</span>
-                  <button onClick={() => adjustBet(1)} disabled={isPlaying} style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(180deg,#333,#222)', border: '1.5px solid #555', color: '#fff', fontWeight: 900, fontSize: 20, opacity: isPlaying ? 0.3 : 1 }}>+</button>
+                  <button onClick={() => adjustBet(1)} disabled={isPlaying} style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(180deg,#333,#222)', border: '1.5px solid #555', color: '#fff', fontWeight: 900, fontSize: 20, opacity: isPlaying ? 0.3 : 1, flexShrink: 0 }}>+</button>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
                   {[1, 5, 20, 100].map((v, i) => (
-                    <button key={v} onClick={() => !isPlaying && setBet(v)} disabled={isPlaying} style={{ borderRadius: 9, padding: '5px 0', fontWeight: 900, fontSize: 13, color: '#fff', background: i === 3 ? `linear-gradient(180deg,${G_LIGHT},${G_DARK})` : 'linear-gradient(180deg,#2e2e2e,#1a1a1a)', border: i === 3 ? `1.5px solid ${G_BORDER}` : '1.5px solid #3a3a3a', opacity: isPlaying ? 0.3 : 1 }}>{v}</button>
+                    <button key={v} onClick={() => !isPlaying && setBet(v)} disabled={isPlaying} style={{ borderRadius: 9, padding: '6px 0', fontWeight: 900, fontSize: 13, color: '#fff', background: i === 3 ? `linear-gradient(180deg,${G_LIGHT},${G_DARK})` : 'linear-gradient(180deg,#2e2e2e,#1a1a1a)', border: i === 3 ? `1.5px solid ${G_BORDER}` : '1.5px solid #3a3a3a', opacity: isPlaying ? 0.3 : 1 }}>{v}</button>
                   ))}
                 </div>
               </div>
-              <button onClick={isPlaying ? (safeCount > 0 ? handleCashout : handleCancel) : handleBet} style={{ flex: 1, borderRadius: 14, border: `2.5px solid ${actionStyle.border}`, background: actionStyle.bg, color: '#fff', fontWeight: 900, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 14px ${actionStyle.shadow}` }}>
-                <span style={{ fontSize: '22px', lineHeight: 1.1 }}>{isPlaying && safeCount > 0 ? 'Вывести' : isPlaying ? 'Отменить' : 'Ставка'}</span>
-                <span style={{ fontSize: 11, opacity: 0.8, marginTop: 2 }}>{isPlaying && safeCount > 0 ? `x${currentMult} = ${Math.round(bet * currentMult).toLocaleString()}` : `${bet.toLocaleString()} Фишек`}</span>
+
+              <button
+                onClick={isPlaying ? (safeCount > 0 ? handleCashout : handleCancel) : handleBet}
+                style={{
+                  flex: 1,
+                  height: 82,          /* FIX: Explicit height prevents stretching */
+                  borderRadius: 14,
+                  border: `2.5px solid ${actionStyle.border}`,
+                  background: actionStyle.bg,
+                  color: '#fff',
+                  fontWeight: 900,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: `0 4px 14px ${actionStyle.shadow}`,
+                }}
+              >
+                <span style={{ fontSize: '20px', lineHeight: 1.1 }}>{isPlaying && safeCount > 0 ? 'Вывести' : isPlaying ? 'Отменить' : 'Ставка'}</span>
+                <span style={{ fontSize: 10, opacity: 0.8, marginTop: 2 }}>{isPlaying && safeCount > 0 ? `x${currentMult}` : `${bet.toLocaleString()} Ф`}</span>
               </button>
             </div>
           ) : (
-            <button onClick={() => { setPhase('idle'); setCells(Array(25).fill('hidden')); setSafeCount(0); setCurrentMult(1.00); setWinAmount(null); setMines(new Set()); }} style={{ width: '100%', borderRadius: 14, background: `linear-gradient(180deg,${G_LIGHT},${G_DARK})`, border: `2.5px solid ${G_BORDER}`, color: '#fff', fontWeight: 900, fontSize: '18px', boxShadow: `0 4px 14px ${G}66` }}>🎮 Новая игра</button>
+            <button
+              onClick={() => { setPhase('idle'); setCells(Array(25).fill('hidden')); setSafeCount(0); setCurrentMult(1.00); setWinAmount(null); setMines(new Set()); }}
+              style={{
+                width: '100%',
+                height: 60,            /* FIX: Explicit height prevents stretching */
+                borderRadius: 14,
+                background: `linear-gradient(180deg,${G_LIGHT},${G_DARK})`,
+                border: `2.5px solid ${G_BORDER}`,
+                color: '#fff', fontWeight: 900, fontSize: '18px',
+                boxShadow: `0 4px 14px ${G}66`,
+              }}
+            >🎮 Новая игра</button>
           )}
         </div>
 
+        {/* Bombs selector */}
         <div style={{ flexShrink: 0, background: 'linear-gradient(180deg,#1e1e1e,#141414)', border: '1.5px solid #2a2a2a', borderRadius: 12, padding: '6px 10px' }}>
           <div style={{ color: '#bbb', fontWeight: 700, fontSize: 11, marginBottom: 4 }}>Количество бомб</div>
           <div style={{ display: 'flex', gap: 6 }}>

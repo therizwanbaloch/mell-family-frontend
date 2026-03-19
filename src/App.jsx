@@ -5,7 +5,6 @@ import { loginAsync } from "./redux/authSlice";
 import { fetchState } from "./redux/gameSlice";
 
 import Home     from "./pages/Home";
-import Shop     from "./pages/Shop";
 import PageNine from "./pages/PageNine";
 import Page20   from "./pages/Page20";
 import Page12   from "./pages/Page12";
@@ -79,9 +78,8 @@ function App() {
       <TelegramSetup />
       <Routes>
         <Route path="/"       element={<Home />} />
-        <Route path="/shop"   element={<Shop />} />
         <Route path="/nine"   element={<PageNine />} />
-        <Route path="/page20" element={<Page20 />} />
+        <Route path="/shop" element={<Page20 />} />
         <Route path="/page12" element={<Page12 />} />
         <Route path="/page10" element={<PageTen />} />
         <Route path="/page14" element={<Page14 />} />

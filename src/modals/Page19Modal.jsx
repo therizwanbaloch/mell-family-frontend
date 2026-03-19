@@ -45,15 +45,11 @@ const Page19Modal = ({ isOpen, onClose }) => {
   const drunRoadPoints = user?.drunroad_points ?? user?.drun_road_points ?? user?.road_points ?? 0;
   const claimedSet     = extractClaimedSet(user);
 
-  
   const ORANGE_MAX = 200;
-
-  const orangePct = (Math.min(drunRoadPoints, ORANGE_MAX) / ROAD_MAX) * 100;
-
-  const greenPct =
-    drunRoadPoints > ORANGE_MAX
-      ? ((drunRoadPoints - ORANGE_MAX) / ROAD_MAX) * 100
-      : 0;
+  const orangePct  = (Math.min(drunRoadPoints, ORANGE_MAX) / ROAD_MAX) * 100;
+  const greenPct   = drunRoadPoints > ORANGE_MAX
+    ? ((drunRoadPoints - ORANGE_MAX) / ROAD_MAX) * 100
+    : 0;
 
   const getStatus = (t) => {
     if (claimedSet.has(t))   return 'claimed';
@@ -80,7 +76,8 @@ const Page19Modal = ({ isOpen, onClose }) => {
     if (claiming) return;
     setClaiming(threshold);
     try {
-      await dispatch(doClaimDrunRoad()).unwrap();
+      // Pass threshold to the thunk so backend knows which reward to claim
+      await dispatch(doClaimDrunRoad(threshold)).unwrap();
       setMsg({ ok: true, text: 'Награда получена!' });
       dispatch(fetchState());
     } catch (e) {
@@ -91,7 +88,7 @@ const Page19Modal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div 
+    <div
       onClick={close}
       className="fixed inset-0 z-[300] flex items-end justify-center"
       style={{ background: 'rgba(0,0,0,0.5)' }}
@@ -107,7 +104,7 @@ const Page19Modal = ({ isOpen, onClose }) => {
           transition: 'transform 350ms cubic-bezier(0.32,0.72,0,1)',
         }}
       >
-        {/* Drag */}
+        {/* Drag handle */}
         <div className="shrink-0 flex justify-center pt-2.5 pb-1">
           <div className="w-9 h-1 rounded-full bg-black" />
         </div>
@@ -138,45 +135,19 @@ const Page19Modal = ({ isOpen, onClose }) => {
             </p>
           </div>
 
-          {/* ✅ FIXED PROGRESS BAR */}
+          {/* PROGRESS BAR */}
           <div className="mt-3 shrink-0">
             <div className="h-6 w-full border border-black rounded-full overflow-hidden relative">
-              
-              <div
-                className="absolute left-0 top-0 h-full bg-[#b58030]"
-                style={{ width: `${orangePct}%` }}
-              />
-
-              <div
-                className="absolute top-0 h-full"
-                style={{
-                  left: `${orangePct}%`,
-                  width: `${greenPct}%`,
-                  background: '#53a00d'
-                }}
-              />
-
-              <div
-                className="absolute top-0 h-full bg-[#333]"
-                style={{
-                  left: `${orangePct + greenPct}%`,
-                  width: `${100 - (orangePct + greenPct)}%`
-                }}
-              />
+              <div className="absolute left-0 top-0 h-full bg-[#b58030]" style={{ width: `${orangePct}%` }} />
+              <div className="absolute top-0 h-full" style={{ left: `${orangePct}%`, width: `${greenPct}%`, background: '#53a00d' }} />
+              <div className="absolute top-0 h-full bg-[#333]" style={{ left: `${orangePct + greenPct}%`, width: `${100 - (orangePct + greenPct)}%` }} />
             </div>
-
-            {/* ✅ WHITE LABELS */}
             <div className="relative h-4 mt-1">
               {MILESTONES.map((m, i) => (
                 <span
                   key={i}
                   className="absolute font-bold whitespace-nowrap"
-                  style={{
-                    left: `${(i / (MILESTONES.length - 1)) * 100}%`,
-                    transform: 'translateX(-50%)',
-                    fontSize: 8,
-                    color: '#ffffff',
-                  }}
+                  style={{ left: `${(i / (MILESTONES.length - 1)) * 100}%`, transform: 'translateX(-50%)', fontSize: 8, color: '#ffffff' }}
                 >
                   {m}
                 </span>
@@ -184,7 +155,7 @@ const Page19Modal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* CARDS */}
+          {/* REWARD CARDS */}
           <div className="mt-3 flex-1 overflow-y-auto space-y-2 pr-1">
             {ROAD_REWARDS.map((r, i) => {
               const status    = getStatus(r.threshold);
@@ -193,34 +164,55 @@ const Page19Modal = ({ isOpen, onClose }) => {
               const isAvail   = status === 'available';
               const isLoading = claiming === r.threshold;
 
+              /* ── Button style logic ──
+                 locked   → grey bg, grey border, dark text, not clickable
+                 available → white bg, black border, black text, clickable
+                 claimed  → grey bg, grey border, muted text, not clickable
+              */
+              const btnStyle = isAvail
+                ? {
+                    background:  '#ffffff',
+                    borderColor: '#000000',
+                    color:       '#000000',
+                    boxShadow:   '0 2px 0 #555',
+                    cursor:      'pointer',
+                    opacity:     1,
+                  }
+                : {
+                    background:  '#555555',
+                    borderColor: '#333333',
+                    color:       '#aaaaaa',
+                    boxShadow:   'none',
+                    cursor:      'not-allowed',
+                    opacity:     1,
+                  };
+
+              const btnLabel = isLoading
+                ? '...'
+                : isClaimed
+                  ? 'Получено'
+                  : isAvail
+                    ? 'Забрать'
+                    : 'Заблок.';
+
               return (
                 <div
                   key={i}
                   className="bg-[#000] rounded-xl p-2 flex justify-between items-center border-2 border-[#000]"
-                  style={{ opacity: isLocked ? 0.6 : 1 }}
+                  style={{ opacity: isLocked ? 0.55 : 1 }}
                 >
                   <div>
-                    <p className="text-[10px] text-white">
-                      {r.threshold} / 1000
-                    </p>
-                    <h3 className="text-white text-sm font-semibold">
-                      {r.label}
-                    </h3>
+                    <p className="text-[10px] text-white">{r.threshold} / 1000</p>
+                    <h3 className="text-white text-sm font-semibold">{r.label}</h3>
                   </div>
 
                   <button
                     onClick={() => { if (isAvail && !claiming) handleClaim(r.threshold); }}
-                    className="px-3 py-1 rounded-md text-sm border active:scale-95"
-                    style={{
-                      background: '#ffffff',
-                      borderColor: '#000000',
-                      color: '#000000',
-                      boxShadow: '0 2px 0 #000',
-                      cursor: isAvail ? 'pointer' : 'not-allowed',
-                      minWidth: 80,
-                    }}
+                    disabled={!isAvail || !!claiming}
+                    className="px-3 py-1 rounded-md text-sm border active:scale-95 transition-transform font-bold"
+                    style={{ ...btnStyle, minWidth: 80 }}
                   >
-                    {isLoading ? '...' : isClaimed ? 'Получено' : isAvail ? 'Забрать' : 'Получено'}
+                    {btnLabel}
                   </button>
                 </div>
               );

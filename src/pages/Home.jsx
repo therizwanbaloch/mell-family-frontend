@@ -36,7 +36,7 @@ const FloatingLabel = ({ x, y, value }) => (
   }}>+{value}</div>
 );
 
-/* ─── Side icon — iconSize driven by parent container height ── */
+/* ─── Side icon ── */
 const SideIcon = ({ src, label, onClick, iconSize }) => (
   <div
     className="flex flex-col items-center cursor-pointer active:opacity-70 transition-opacity"
@@ -61,7 +61,6 @@ const SideIcon = ({ src, label, onClick, iconSize }) => (
   </div>
 );
 
-/* ─── Helpers ────────────────────────────────────────────────── */
 const fmtFa    = (n) => Math.floor(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 const fmtShort = (n) => {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}М`;
@@ -87,13 +86,13 @@ const Home = () => {
 
   const { user, rates, tournaments, stateLoading } = useSelector((s) => s.game);
 
-  const serverFa     = user?.fa           ?? 0;
-  const serverEnergy = user?.energy       ?? 0;
-  const faPerTap     = rates?.fa_per_tap  ?? 1;
-  const faPerHour    = rates?.fa_per_hour ?? 0;
+  const serverFa     = user?.fa            ?? 0;
+  const serverEnergy = user?.energy        ?? 0;
+  const faPerTap     = rates?.fa_per_tap   ?? 1;
+  const faPerHour     = rates?.fa_per_hour ?? 0;
   const playerName   = user?.username || user?.first_name || "PLAYER";
-  const profileLevel = user?.profile_level ?? 1;
   const mainLevel    = user?.main_level    ?? 1;
+  const profileLevel = user?.profile_level ?? 1;
   const levelInMain  = ((profileLevel - 1) % 10) + 1;
   const progress     = (levelInMain / 10) * 100;
   const maxEnergy    = 1000;
@@ -103,10 +102,10 @@ const Home = () => {
   const [tapping,     setTapping]     = useState(false);
   const [floats,      setFloats]      = useState([]);
 
-  /* ── Measure the battle area container so tap + icons fill it exactly ── */
   const battleRef = useRef(null);
   const [battleH, setBattleH] = useState(300);
   const [battleW, setBattleW] = useState(390);
+
   useEffect(() => {
     if (!battleRef.current) return;
     const ro = new ResizeObserver(([e]) => {
@@ -117,7 +116,6 @@ const Home = () => {
     return () => ro.disconnect();
   }, []);
 
-  /* ── Live dvh for the fixed sections ── */
   const [dvh, setDvh] = useState(window.innerHeight / 100);
   useEffect(() => {
     const onResize = () => setDvh(window.innerHeight / 100);
@@ -125,26 +123,18 @@ const Home = () => {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  /*
-    TAP SIZE  = 85% of battle container height (leaves room for ТАП label + padding)
-    ICON SIZE = battle container height / 4.2  (3 icons + gaps fill the height)
-    Both grow automatically as the container grows on taller screens — zero manual tuning.
-  */
-  // Constrain tap by BOTH axes:
-  // - vertically: 82% of battle height
-  // - horizontally: battle width minus the two icon columns (each ~iconW) minus padding
-  // Take the smaller of the two so it never overflows either direction
-  const iconColW  = Math.min(72, Math.max(48, battleW * 0.18));   // each icon column width
-  const tapFromH  = battleH * 0.82;
-  const tapFromW  = battleW - iconColW * 2 - 24;                  // 24px total padding
+  /* ─── SCALING LOGIC ─── */
+  // Scale down Battle Layout by 2% (0.98 multiplier)
+  const iconColW  = Math.min(72, Math.max(48, battleW * 0.18)) * 0.98;
+  const tapFromH  = battleH * 0.82 * 0.98;
+  const tapFromW  = (battleW - iconColW * 2 - 24) * 0.98;
   const tapSize   = Math.min(280, Math.max(140, Math.min(tapFromH, tapFromW)));
 
-  // Icon size: constrained by height (3 icons fill column) AND column width
-  const iconFromH = battleH / 4.4;
+  const iconFromH = (battleH / 4.4) * 0.98;
   const iconFromW = iconColW * 0.88;
   const iconSize  = Math.min(64, Math.max(30, Math.min(iconFromH, iconFromW)));
 
-  /* Fixed-section sizes — dvh based, small clamps so they stay compact */
+  // Increase Balance Section by 2% (1.02 multiplier)
   const s = {
     logoH:      Math.min(150, Math.max(80,  dvh * 13.5)),
     profileMT:  Math.min(14,  Math.max(4,   dvh * 1.1)),
@@ -153,8 +143,8 @@ const Home = () => {
     nameFont:   Math.min(15,  Math.max(11,  dvh * 1.5)),
     vividFont:  Math.min(13,  Math.max(10,  dvh * 1.25)),
     balMT:      Math.min(10,  Math.max(3,   dvh * 0.9)),
-    coinSize:   Math.min(68,  Math.max(42,  dvh * 6.8)),
-    balFont:    Math.min(30,  Math.max(18,  dvh * 3.0)),
+    coinSize:   Math.min(68,  Math.max(42,  dvh * 6.8)) * 1.02, // +2%
+    balFont:    Math.min(30,  Math.max(18,  dvh * 3.0)) * 1.02, // +2%
     rateFont:   Math.min(10,  Math.max(8,   dvh * 1.0)),
     rateMB:     Math.min(8,   Math.max(2,   dvh * 0.7)),
     btmGap:     Math.min(8,   Math.max(3,   dvh * 0.7)),
@@ -333,7 +323,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* ══ BALANCE ══ */}
+      {/* ══ BALANCE (INCREASED 2%) ══ */}
       <div className="flex items-center justify-center shrink-0 gap-2" style={{ marginTop: `${s.balMT}px`, paddingBottom: `${dvh * 0.3}px` }}>
         <img src={coinImage} alt="fa" style={{ width: s.coinSize, height: s.coinSize, objectFit: "contain" }} />
         <span className="text-white font-black" style={{ fontFamily: "Days One", fontSize: `${s.balFont}px`, letterSpacing: "0.06em", textShadow: "0 2px 10px rgba(0,0,0,0.9)" }}>
@@ -345,36 +335,31 @@ const Home = () => {
       <div className="flex items-center justify-center shrink-0 gap-2.5" style={{ marginBottom: `${s.rateMB}px` }}>
         <div className="flex items-center gap-1.5 px-2 rounded-full"
           style={{ background: "linear-gradient(180deg,#5ecb1a,#3a9010)", border: "2px solid #2a6a08", boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
-          <span className="text-white font-black whitespace-nowrap" style={{ fontSize: s.rateFont }}>{stateLoading ? "..." : `${fmtShort(faPerHour)}В/час`}</span>
-          <FaSackDollar color="#fff" size={s.rateFont + 1} />
+          <span className="text-black font-black whitespace-nowrap" style={{ fontSize: s.rateFont }}>{stateLoading ? "..." : `${fmtShort(faPerHour)}В/час`}</span>
+          <FaSackDollar color="#000" size={s.rateFont + 1} />
         </div>
         <div className="flex items-center gap-1.5 px-2 rounded-full"
           style={{ background: "linear-gradient(180deg,#f0a800,#c87800)", border: "2px solid #8a5500", boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
-          <span className="text-white font-black whitespace-nowrap" style={{ fontSize: s.rateFont }}>{stateLoading ? "..." : `${fmtShort(faPerTap)}М/тап`}</span>
-          <PiCursorClick color="#fff" size={s.rateFont + 1} />
+          <span className="text-black font-black whitespace-nowrap" style={{ fontSize: s.rateFont }}>{stateLoading ? "..." : `${fmtShort(faPerTap)}М/тап`}</span>
+          <PiCursorClick color="#000" size={s.rateFont + 1} />
         </div>
       </div>
 
-      {/* ══ BATTLE AREA
-          ref={battleRef} → ResizeObserver measures its actual height
-          tap image and side icons derive their size from battleH
-          → on taller screens the container is taller → everything inside grows automatically
-      ══ */}
+      {/* ══ BATTLE AREA (SCALED DOWN 2%) ══ */}
       <div
         ref={battleRef}
         className="min-h-0 flex flex-col"
         style={{ flex: "1 1 0" }}
       >
         <div className="flex items-center justify-between flex-1 px-2">
-
-          {/* Left icons — fill battle height */}
+          {/* Left icons */}
           <div className="flex flex-col items-center justify-center h-full" style={{ gap: iconSize * 0.35, width: iconColW }}>
             {leftIcons.map(({ src, label, action }) => (
               <SideIcon key={label} src={src} label={label} onClick={action} iconSize={iconSize} />
             ))}
           </div>
 
-          {/* Tap — scales to fill available battle height */}
+          {/* Tap */}
           <div
             onTouchStart={handleTap}
             onClick={handleTap}
@@ -407,24 +392,20 @@ const Home = () => {
             </svg>
           </div>
 
-          {/* Right icons — fill battle height */}
+          {/* Right icons */}
           <div className="flex flex-col items-center justify-center h-full" style={{ gap: iconSize * 0.35, width: iconColW }}>
             {rightIcons.map(({ src, label, action }) => (
               <SideIcon key={label} src={src} label={label} onClick={action} iconSize={iconSize} />
             ))}
           </div>
-
         </div>
       </div>
 
-      {/* ══ BOTTOM BUTTONS
-          paddingBottom = fixed 62px (SnackBar height) — never creates extra gap
-      ══ */}
+      {/* ══ BOTTOM BUTTONS ══ */}
       <div
         className="relative z-20 w-[92%] mx-auto flex flex-col shrink-0"
         style={{ gap: `${s.btmGap}px`, paddingBottom: "62px" }}
       >
-        {/* Timer */}
         <div
           onClick={() => navigate("/nine")}
           className="rounded-xl cursor-pointer active:scale-[0.97] transition-transform"
@@ -437,7 +418,6 @@ const Home = () => {
           <h3 className="font-black m-0" style={{ fontSize: `${s.timerFontL}px`, color: "#000" }}>{timeLeft}</h3>
         </div>
 
-        {/* Energy + УЛУЧШАЙ */}
         <div className="flex items-center gap-1">
           <div className="shrink-0 rounded-full flex items-center justify-center z-10 -mr-3"
             style={{
