@@ -223,7 +223,7 @@ export default function Page26() {
       </div>
 
       {/* ── GRID SECTION ── */}
-      <div style={{ height: '40dvh', flexShrink: 0, padding: '4px 10px 6px' }}>
+      <div style={{ flex: '1 1 auto', minHeight: 0, padding: '4px 10px 6px' }}>
         <div style={{ width: '100%', height: '100%', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gridTemplateRows: 'repeat(5, 1fr)', gap: 5, background: 'linear-gradient(180deg,#1c1c1c,#141414)', border: '2px solid #252525', borderRadius: 14, padding: 7, boxSizing: 'border-box' }}>
           {cells.map((state, idx) => (
             <Cell key={idx} idx={idx} cellState={state} onReveal={handleReveal} disabled={!isPlaying} />
@@ -233,17 +233,16 @@ export default function Page26() {
 
       {/* ── CONTROLS SECTION ── */}
       <div style={{
-        flex: '0 1 auto',       /* FIX: Takes only needed space, prevents stretching on iPhones */
+        flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
-        padding: '0 10px 12px', 
-        gap: 8,                 
-        overflow: 'hidden',
-        minHeight: 0,
+        padding: '0 10px 10px', 
+        gap: 6,
+        justifyContent: 'flex-end', /* Keeps content at the very bottom for iPhone */
       }}>
 
         {/* Multiplier table */}
-        <div style={{ flexShrink: 0, display: 'flex', gap: 4 }}>
+        <div style={{ display: 'flex', gap: 4 }}>
           {multTable.map(({ step, mult }) => {
             const active = safeCount >= step;
             return (
@@ -257,7 +256,7 @@ export default function Page26() {
 
         {/* Status bar */}
         {(isOver || (isPlaying && safeCount > 0)) && (
-          <div style={{ flexShrink: 0, borderRadius: 9, padding: '4px 10px', textAlign: 'center', fontWeight: 900, fontSize: 11, background: phase === 'won' ? 'rgba(10,50,4,0.97)' : phase === 'lost' ? 'rgba(60,4,4,0.97)' : 'rgba(10,40,4,0.9)', border: `1.5px solid ${phase === 'lost' ? '#cc1818' : G}`, color: phase === 'lost' ? '#ff5050' : '#7ade30' }}>
+          <div style={{ borderRadius: 9, padding: '4px 10px', textAlign: 'center', fontWeight: 900, fontSize: 11, background: phase === 'won' ? 'rgba(10,50,4,0.97)' : phase === 'lost' ? 'rgba(60,4,4,0.97)' : 'rgba(10,40,4,0.9)', border: `1.5px solid ${phase === 'lost' ? '#cc1818' : G}`, color: phase === 'lost' ? '#ff5050' : '#7ade30' }}>
             {phase === 'won'  && `🎉 +${winAmount?.toLocaleString()} Фишек выиграно!`}
             {phase === 'lost' && `💥 Мина! -${bet.toLocaleString()} Фишек потеряно`}
             {isPlaying && safeCount > 0 && `x${currentMult} → ${Math.round(bet * currentMult).toLocaleString()} Фишек`}
@@ -266,16 +265,15 @@ export default function Page26() {
 
         {/* Main controls box */}
         <div style={{
-          flexShrink: 0,        
           background: 'linear-gradient(180deg,#1e1e1e,#141414)',
           border: '1.5px solid #2a2a2a',
           borderRadius: 14,
-          padding: '10px 10px',
+          padding: '8px 10px',
           display: 'flex',
         }}>
           {!isOver ? (
             <div style={{ display: 'flex', gap: 9, width: '100%' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 8, flexShrink: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 6, flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <button onClick={() => adjustBet(-1)} disabled={isPlaying} style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(180deg,#333,#222)', border: '1.5px solid #555', color: '#fff', fontWeight: 900, fontSize: 20, opacity: isPlaying ? 0.3 : 1, flexShrink: 0 }}>−</button>
                   <span style={{ color: '#fff', fontWeight: 900, textAlign: 'center', minWidth: 55, fontSize: '18px' }}>{bet.toLocaleString()}</span>
@@ -283,7 +281,7 @@ export default function Page26() {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
                   {[1, 5, 20, 100].map((v, i) => (
-                    <button key={v} onClick={() => !isPlaying && setBet(v)} disabled={isPlaying} style={{ borderRadius: 9, padding: '6px 0', fontWeight: 900, fontSize: 13, color: '#fff', background: i === 3 ? `linear-gradient(180deg,${G_LIGHT},${G_DARK})` : 'linear-gradient(180deg,#2e2e2e,#1a1a1a)', border: i === 3 ? `1.5px solid ${G_BORDER}` : '1.5px solid #3a3a3a', opacity: isPlaying ? 0.3 : 1 }}>{v}</button>
+                    <button key={v} onClick={() => !isPlaying && setBet(v)} disabled={isPlaying} style={{ borderRadius: 9, padding: '5px 0', fontWeight: 900, fontSize: 13, color: '#fff', background: i === 3 ? `linear-gradient(180deg,${G_LIGHT},${G_DARK})` : 'linear-gradient(180deg,#2e2e2e,#1a1a1a)', border: i === 3 ? `1.5px solid ${G_BORDER}` : '1.5px solid #3a3a3a', opacity: isPlaying ? 0.3 : 1 }}>{v}</button>
                   ))}
                 </div>
               </div>
@@ -292,7 +290,7 @@ export default function Page26() {
                 onClick={isPlaying ? (safeCount > 0 ? handleCashout : handleCancel) : handleBet}
                 style={{
                   flex: 1,
-                  height: 82,          /* FIX: Explicit height prevents stretching */
+                  height: 80,          
                   borderRadius: 14,
                   border: `2.5px solid ${actionStyle.border}`,
                   background: actionStyle.bg,
@@ -314,7 +312,7 @@ export default function Page26() {
               onClick={() => { setPhase('idle'); setCells(Array(25).fill('hidden')); setSafeCount(0); setCurrentMult(1.00); setWinAmount(null); setMines(new Set()); }}
               style={{
                 width: '100%',
-                height: 60,            /* FIX: Explicit height prevents stretching */
+                height: 60,            
                 borderRadius: 14,
                 background: `linear-gradient(180deg,${G_LIGHT},${G_DARK})`,
                 border: `2.5px solid ${G_BORDER}`,
@@ -326,7 +324,7 @@ export default function Page26() {
         </div>
 
         {/* Bombs selector */}
-        <div style={{ flexShrink: 0, background: 'linear-gradient(180deg,#1e1e1e,#141414)', border: '1.5px solid #2a2a2a', borderRadius: 12, padding: '6px 10px' }}>
+        <div style={{ background: 'linear-gradient(180deg,#1e1e1e,#141414)', border: '1.5px solid #2a2a2a', borderRadius: 12, padding: '6px 10px' }}>
           <div style={{ color: '#bbb', fontWeight: 700, fontSize: 11, marginBottom: 4 }}>Количество бомб</div>
           <div style={{ display: 'flex', gap: 6 }}>
             {[2, 3, 5, 7].map(n => (
