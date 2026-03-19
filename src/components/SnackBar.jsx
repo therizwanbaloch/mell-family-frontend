@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const tabs = [
-  { id: 0, label: 'МАГАЗИН',  route: '/page20' },
+  { id: 0, label: 'МАГАЗИН',  route: '/shop' },
   { id: 1, label: 'ИГРЫ',     route: '/page23'  },
   { id: 2, label: 'ГЛАВНАЯ',  route: '/'       },
   { id: 3, label: 'ДРУНЫ',    route: '/page18' },
