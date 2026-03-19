@@ -33,7 +33,7 @@ const FloatingLabel = ({ x, y, value }) => (
     color: "#FFD700", fontWeight: 900, fontSize: 18,
     textShadow: "0 2px 8px rgba(0,0,0,0.9),0 0 16px rgba(255,215,0,0.7)",
     whiteSpace: "nowrap",
-  }}>{value}</div>
+  }}>+{value}</div>
 );
 
 /* ─── Side icon ──────────────────────────────────────────────── */
@@ -45,7 +45,7 @@ const SideIcon = ({ src, label, onClick }) => (
 );
 
 /* ─── Helpers ────────────────────────────────────────────────── */
-const fmtFa     = (n) => Math.floor(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+const fmtFa    = (n) => Math.floor(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 const fmtShort = (n) => {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}М`;
   if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}К`;
@@ -171,7 +171,7 @@ const Home = () => {
 
   return (
     <div
-      className="max-w-[430px] mx-auto h-dvh overflow-hidden flex flex-col justify-between bg-cover bg-center"
+      className="max-w-[430px] mx-auto h-dvh overflow-hidden flex flex-col bg-cover bg-center"
       style={{ backgroundImage: `url(${mainBg})`, fontFamily: "'Nunito', sans-serif" }}
     >
       <style>{`
@@ -189,87 +189,124 @@ const Home = () => {
         <FloatingLabel key={f.id} x={f.x} y={f.y} value={fmtShort(faPerTap)} />
       ))}
 
-      {/* ── TOP SECTION (Logo + Profile + Balance) ── */}
-      <div className="flex flex-col shrink-0">
-        <img
-          src={logoImg}
-          alt="DRUN FAMILY"
-          style={{
-            height: "clamp(80px, 18vh, 140px)",
-            width: "80%",
-            marginLeft: "auto", marginRight: "auto",
-            objectFit: "contain", display: "block",
-            filter: "drop-shadow(0 0 14px rgba(255,210,0,0.5))",
-          }}
-        />
+      {/* ══ LOGO
+            clamp: min=70px, preferred=13dvh (scales with screen height), max=130px
+            On 844px (iPhone 13): 13dvh = ~110px — same as before
+            On 932px (iPhone 14 Max): 13dvh = ~121px — slightly taller but capped at 130px
+            This stops the logo from growing and eating space on Pro Max screens
+      ══ */}
+      <img
+        src={logoImg}
+        alt="DRUN FAMILY"
+        style={{
+          height: "clamp(70px,13dvh,130px)",
+          width: "80%",
+          marginLeft: "auto", marginRight: "auto",
+          objectFit: "contain", display: "block", flexShrink: 0,
+          filter: "drop-shadow(0 0 14px rgba(255,210,0,0.5))",
+        }}
+      />
 
-        <div className="flex items-center bg-neutral-900 rounded-xl w-full mx-1 mt-1">
-          <div className="flex items-center w-full px-3 py-2 gap-1">
-            <div className="relative shrink-0 cursor-pointer" onClick={() => setProfileOpen(true)}>
-              <img
-                src={user?.photo_url || profilePic}
-                alt="profile"
-                className="w-11 h-11 rounded-full object-cover border-2 border-yellow-400"
-              />
-              <div style={{
-                position: "absolute", bottom: -3, right: -3,
-                width: 18, height: 18,
-                background: "linear-gradient(135deg,#f0a800,#c87800)",
-                border: "2px solid #8a5500",
-                transform: "rotate(45deg)",
-                display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10,
-              }}>
+      {/* ══ PROFILE ROW ══ */}
+      <div className="flex items-center bg-neutral-900 rounded-xl shrink-0 w-full mx-1" style={{ marginTop: "1dvh" }}>
+        <div className="flex items-center w-full px-3 py-2 gap-1">
+          <div className="relative shrink-0 cursor-pointer" onClick={() => setProfileOpen(true)}>
+            <img
+              src={user?.photo_url || profilePic}
+              alt="profile"
+              onError={(e) => { e.target.src = profilePic; }}
+              className="w-11 h-11 rounded-full object-cover border-2 border-yellow-400"
+            />
+            <div style={{
+              position: "absolute", bottom: -3, right: -3,
+              width: 18, height: 18,
+              background: "linear-gradient(135deg,#f0a800,#c87800)",
+              border: "2px solid #8a5500",
+              transform: "rotate(45deg)",
+              display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10,
+            }}>
+              <span style={{ transform: "rotate(-45deg)", fontSize: 9, fontWeight: 900, color: "#fff", lineHeight: 1 }}>
+                {mainLevel}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col flex-1 min-w-0 gap-1">
+            <p className="text-white font-semibold truncate m-0 text-sm">
+              {stateLoading ? "..." : playerName}
+            </p>
+            <div style={{ position: "relative", width: "100%", height: 5, borderRadius: 99, overflow: "visible" }}>
+              <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: `${progress}%`, background: "#b58030", borderRadius: 99 }} />
+              <div style={{ position: "absolute", left: `${progress}%`, top: 0, height: "100%", width: `${100 - progress}%`, background: "#4b4b4b", borderRadius: 99 }} />
+              <div style={{ position: "absolute", right: -9, top: "50%", transform: "translateY(-50%) rotate(45deg)", width: 18, height: 18, background: "#53a00d", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10 }}>
                 <span style={{ transform: "rotate(-45deg)", fontSize: 9, fontWeight: 900, color: "#fff", lineHeight: 1 }}>
-                  {mainLevel}
+                  {Math.min(levelInMain + 1, 10)}
                 </span>
               </div>
             </div>
-
-            <div className="flex flex-col flex-1 min-w-0 gap-1">
-              <p className="text-white font-semibold truncate m-0 text-sm">{stateLoading ? "..." : playerName}</p>
-              <div style={{ position: "relative", width: "100%", height: 5, borderRadius: 99, background: "#4b4b4b" }}>
-                <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: `${progress}%`, background: "#b58030", borderRadius: 99 }} />
-                <div style={{ position: "absolute", right: -9, top: "50%", transform: "translateY(-50%) rotate(45deg)", width: 18, height: 18, background: "#53a00d", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10 }}>
-                  <span style={{ transform: "rotate(-45deg)", fontSize: 9, fontWeight: 900, color: "#fff", lineHeight: 1 }}>
-                    {Math.min(levelInMain + 1, 10)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={(e) => { e.stopPropagation(); setWithdrawOpen(true); }}
-              className="shrink-0 font-black uppercase cursor-pointer text-[10px] ml-3"
-              style={{ ...GOLD_BTN, borderRadius: 18, padding: "6px 14px", color: "#fff", letterSpacing: "0.05em", whiteSpace: "nowrap" }}
-            >
-              ВЫВОД
-            </button>
           </div>
-        </div>
 
-        <div className="flex items-center justify-center gap-1 py-1">
-          <img src={coinImage} alt="fa" className="w-12 h-12 object-contain" />
-          <span className="text-white font-black" style={{ fontFamily: 'Days One', fontSize: "clamp(22px,4vw,26px)", letterSpacing: "0.06em", textShadow: "0 2px 10px rgba(0,0,0,0.9)" }}>
-            {fmtFa(displayFa)}
-          </span>
-        </div>
-
-        <div className="flex items-center justify-center gap-2.5 pb-1">
-          <div className="flex items-center gap-1.5 px-2 rounded-full" style={{ background: "linear-gradient(180deg,#5ecb1a,#3a9010)", border: "2px solid #2a6a08" }}>
-            <span className="text-black font-extrabold text-[8px]">{stateLoading ? "..." : `${fmtShort(faPerHour)}В/час`}</span>
-            <FaSackDollar color="#000" size={9} />
-          </div>
-          <div className="flex items-center gap-1.5 px-2 rounded-full" style={{ background: "linear-gradient(180deg,#f0a800,#c87800)", border: "2px solid #8a5500" }}>
-            <span className="text-black font-extrabold text-[8px]">{stateLoading ? "..." : `${fmtShort(faPerTap)}М/тап`}</span>
-            <PiCursorClick color="#000" size={9} />
-          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); setWithdrawOpen(true); }}
+            className="shrink-0 font-black uppercase cursor-pointer text-[10px] ml-3"
+            style={{ ...GOLD_BTN, borderRadius: 18, padding: "6px 14px", color: "#fff", letterSpacing: "0.05em", whiteSpace: "nowrap" }}
+          >
+            ВЫВОД
+          </button>
         </div>
       </div>
 
-      {/* ── BATTLE AREA (Adaptive Center) ── */}
-      <div className="flex-1 flex flex-col justify-center min-h-0">
-        <div className="flex items-center justify-between px-2 w-full">
-          <div className="flex flex-col gap-3 items-center">
+      {/* ══ BALANCE
+            py changed from fixed py-1 to dvh-based so it compresses on tall screens
+      ══ */}
+      <div
+        className="flex items-center justify-center shrink-0 gap-1"
+        style={{ paddingBlock: "0.6dvh", marginBottom: "-10px" }}
+      >
+        <img src={coinImage} alt="fa" className="w-14 h-14 object-contain" />
+        <span
+          className="text-white font-black"
+          style={{
+            fontFamily: "Days One",
+            fontSize: "clamp(22px,4vw,26px)",
+            letterSpacing: "0.06em",
+            textShadow: "0 2px 10px rgba(0,0,0,0.9)",
+          }}
+        >
+          {fmtFa(displayFa)}
+        </span>
+      </div>
+
+      {/* ══ RATES
+            pb changed to dvh-based
+      ══ */}
+      <div
+        className="flex items-center justify-center shrink-0 gap-2.5"
+        style={{ paddingBottom: "0.6dvh" }}
+      >
+        <div className="flex items-center gap-1.5 px-2 rounded-full"
+          style={{ background: "linear-gradient(180deg,#5ecb1a,#3a9010)", border: "2px solid #2a6a08", boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
+          <span className="text-black font-extrabold text-[8px] whitespace-nowrap">
+            {stateLoading ? "..." : `${fmtShort(faPerHour)}В/час`}
+          </span>
+          <FaSackDollar color="#000" size={9} />
+        </div>
+        <div className="flex items-center gap-1.5 px-2 rounded-full"
+          style={{ background: "linear-gradient(180deg,#f0a800,#c87800)", border: "2px solid #8a5500", boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
+          <span className="text-black font-extrabold text-[8px] whitespace-nowrap">
+            {stateLoading ? "..." : `${fmtShort(faPerTap)}М/тап`}
+          </span>
+          <PiCursorClick color="#000" size={9} />
+        </div>
+      </div>
+
+      {/* ══ BATTLE AREA
+            flex-1 + max-height cap so it can't grow indefinitely on tall screens.
+            maxHeight: 42dvh keeps the tap area proportional regardless of phone height.
+      ══ */}
+      <div className="flex-1 min-h-0 flex flex-col" style={{ maxHeight: "42dvh" }}>
+        <div className="flex items-center justify-between flex-1 px-2">
+          <div className="flex flex-col gap-1.5 items-center">
             {leftIcons.map(({ src, label, action }) => (
               <SideIcon key={label} src={src} label={label} onClick={action} />
             ))}
@@ -278,19 +315,43 @@ const Home = () => {
           <div
             onTouchStart={handleTap}
             onClick={handleTap}
-            className="relative cursor-pointer shrink-0 select-none mx-auto"
-            style={{ WebkitTapHighlightColor: "transparent", animation: tapping ? "tapBounce 0.15s ease" : "none", width: TAP_SIZE }}
+            className="relative cursor-pointer shrink-0 select-none"
+            style={{
+              WebkitTapHighlightColor: "transparent",
+              animation: tapping ? "tapBounce 0.15s ease" : "none",
+              width: TAP_SIZE,
+            }}
           >
-            <img src={layoutMain} alt="tap" className="w-full h-full object-contain filter drop-shadow-[0_0_16px_rgba(255,215,0,0.35)]" />
-            <svg viewBox={`0 0 ${TAP_SIZE} 48`} className="absolute -bottom-2 left-0 w-full h-12 pointer-events-none">
-              <defs><path id="tapCurve" d={`M 8,42 Q ${TAP_SIZE/2},6 ${TAP_SIZE-8},42`} /></defs>
-              <text style={{ fill: "#fff", fontSize: "20px", fontWeight: 900, letterSpacing: "0.28em" }}>
+            <img
+              src={layoutMain} alt="tap" draggable={false}
+              style={{
+                width: TAP_SIZE, height: TAP_SIZE,
+                objectFit: "contain", display: "block",
+                WebkitUserSelect: "none", userSelect: "none",
+                filter: "drop-shadow(0 0 16px rgba(255,215,0,0.35))",
+              }}
+            />
+            <svg
+              viewBox={`0 0 ${TAP_SIZE} 48`}
+              style={{
+                position: "absolute",
+                bottom: -6,
+                left: 0,
+                width: TAP_SIZE,
+                height: 48,
+                pointerEvents: "none",
+              }}
+            >
+              <defs>
+                <path id="tapCurve" d={`M 8,42 Q ${TAP_SIZE/2},6 ${TAP_SIZE-8},42`} />
+              </defs>
+              <text style={{ fill: "#fff", fontSize: "20px", fontWeight: 900, letterSpacing: "0.28em", fontFamily: "inherit" }}>
                 <textPath href="#tapCurve" startOffset="50%" textAnchor="middle">ТАП</textPath>
               </text>
             </svg>
           </div>
 
-          <div className="flex flex-col gap-3 items-center">
+          <div className="flex flex-col gap-1.5 items-center">
             {rightIcons.map(({ src, label, action }) => (
               <SideIcon key={label} src={src} label={label} onClick={action} />
             ))}
@@ -298,26 +359,84 @@ const Home = () => {
         </div>
       </div>
 
-      {/* ── BOTTOM SECTION ── */}
-      <div className="relative z-20 w-[92%] mx-auto flex flex-col gap-1 pb-[70px] shrink-0">
-        <div onClick={() => navigate("/nine")} className="px-4 py-2 rounded-xl cursor-pointer active:scale-[0.97]" style={{ width: "fit-content", ...GOLD }}>
-          <h2 className="font-black uppercase leading-tight m-0 text-[clamp(10px,3vw,14px)] text-[#412c05]">УСПЕЙ<br />ПОБЕДИТЬ!</h2>
-          <h3 className="font-black m-0 text-[clamp(16px,5vw,22px)] text-black">{timeLeft}</h3>
+      {/* ══ BOTTOM BUTTONS
+            gap and pb converted to dvh so they stay tight on tall screens
+      ══ */}
+      <div
+        className="relative z-20 w-[92%] mx-auto flex flex-col shrink-0"
+        style={{ gap: "0.8dvh", paddingBottom: "14dvh" }}
+      >
+        {/* Timer */}
+        <div
+          onClick={() => navigate("/nine")}
+          className="px-4 py-2 rounded-xl cursor-pointer active:scale-[0.97] transition-transform"
+          style={{ width: "fit-content", ...GOLD }}
+        >
+          <h2
+            className="font-black uppercase leading-tight m-0"
+            style={{ fontSize: "clamp(10px,3vw,14px)", color: "#412c05", textShadow: "0 1px 0 rgba(255,255,255,0.2)", whiteSpace: "nowrap" }}
+          >
+            УСПЕЙ<br />ПОБЕДИТЬ!
+          </h2>
+          <h3 className="font-black m-0" style={{ fontSize: "clamp(16px,5vw,22px)", color: "#000" }}>
+            {timeLeft}
+          </h3>
         </div>
 
+        {/* Energy bar + УЛУЧШАЙ */}
         <div className="flex items-center gap-1">
-          <div className="shrink-0 rounded-full flex items-center justify-center z-10 -mr-3" style={{ width: "clamp(34px,9vw,42px)", height: "clamp(34px,9vw,42px)", background: "linear-gradient(180deg,#ffe033,#FFD700)", border: "2px solid #b58030", boxShadow: "0 4px 0 #7a4e00" }}>
-            <BsLightningChargeFill color="#000" className="text-[clamp(14px,4vw,20px)]" />
+          <div
+            className="shrink-0 rounded-full flex items-center justify-center z-10 -mr-3"
+            style={{
+              width: "clamp(34px,9vw,42px)", height: "clamp(34px,9vw,42px)",
+              background: "linear-gradient(180deg,#ffe033,#FFD700)",
+              border: "2px solid #b58030",
+              boxShadow: "0 4px 0 #7a4e00, 0 6px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3)",
+            }}
+          >
+            <BsLightningChargeFill color="#000" style={{ fontSize: "clamp(14px,4vw,20px)" }} />
           </div>
 
-          <div className="flex-1 rounded-xl overflow-hidden relative h-[clamp(34px,9vw,42px)] bg-black/45 border-2 border-[#FFD700] shadow-[0_4px_0_#1a5c00] pl-[clamp(18px,5vw,24px)]">
-            <div className="absolute inset-0 transition-all duration-300" style={{ width: `${energyPct}%`, background: energyLow ? "linear-gradient(180deg,#ff6600,#ff3300)" : "linear-gradient(180deg,#53a00d,#0ab621)" }} />
-            <span className="absolute inset-0 flex items-center justify-center font-black z-10 text-white text-[clamp(11px,3.5vw,15px)] drop-shadow-md">
+          <div
+            className="flex-1 rounded-xl overflow-hidden relative"
+            style={{
+              paddingLeft: "clamp(18px,5vw,24px)",
+              height: "clamp(34px,9vw,42px)",
+              background: "rgba(0,0,0,0.45)",
+              border: "2px solid #FFD700",
+              boxShadow: "0 4px 0 #1a5c00, 0 6px 8px rgba(0,0,0,0.4)",
+            }}
+          >
+            <div
+              className="absolute inset-0 rounded-[inherit] transition-[width,background] duration-300"
+              style={{
+                width: `${energyPct}%`,
+                background: energyLow
+                  ? "linear-gradient(180deg,#ff6600,#ff3300)"
+                  : "linear-gradient(180deg,#53a00d,#0ab621)",
+              }}
+            />
+            <span
+              className="absolute inset-0 flex items-center justify-center font-black z-10 whitespace-nowrap text-white"
+              style={{ fontSize: "clamp(11px,3.5vw,15px)", textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}
+            >
               {Math.floor(displayEnergy)}/{maxEnergy}
             </span>
           </div>
 
-          <button onClick={() => navigate("/page14")} className="shrink-0 rounded-xl font-black uppercase px-[clamp(10px,3vw,18px)] py-[clamp(6px,2vw,10px)] text-[clamp(10px,3vw,14px)] text-[#412c05] active:scale-95" style={GOLD}>
+          <button
+            onClick={() => navigate("/page14")}
+            className="shrink-0 rounded-xl font-black uppercase tracking-wide active:scale-95 transition-transform"
+            style={{
+              paddingInline: "clamp(10px,3vw,18px)",
+              paddingBlock: "clamp(6px,2vw,10px)",
+              fontSize: "clamp(10px,3vw,14px)",
+              color: "#412c05",
+              textShadow: "0 1px 0 rgba(255,255,255,0.2)",
+              whiteSpace: "nowrap",
+              ...GOLD,
+            }}
+          >
             УЛУЧШАЙ
           </button>
         </div>
