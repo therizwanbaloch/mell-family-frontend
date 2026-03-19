@@ -52,23 +52,18 @@ const fmtShort = (n) => {
   return String(Math.floor(n));
 };
 
-/* ─── Gold style (ВЫВОД button) ─────────────────────────────── */
 const GOLD_BTN = {
   background: "linear-gradient(180deg,#deba00,#c87800)",
   border: "2.5px solid #af8700",
   boxShadow: "0 3px 8px rgba(175,135,0,0.55)",
 };
 
-/* ─── Gold style from HomeBottomButtons (timer/energy/улучшай) ─ */
 const GOLD = {
   background: "linear-gradient(180deg,#f0a800 0%,#da9d01 50%,#b87e00 100%)",
   border: "2px solid #b58030",
   boxShadow: "0 5px 0 #7a4e00, 0 7px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.25)",
 };
 
-/* ═══════════════════════════════════════════════════════════════
-   HOME — all state merged, zero child boundary on tap path
-═══════════════════════════════════════════════════════════════ */
 const Home = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -86,7 +81,6 @@ const Home = () => {
   const progress     = (levelInMain / 10) * 100;
   const maxEnergy    = 1000;
 
-  /* optimistic tap state */
   const [localFa,     setLocalFa]     = useState(null);
   const [localEnergy, setLocalEnergy] = useState(null);
   const [tapping,     setTapping]     = useState(false);
@@ -97,12 +91,10 @@ const Home = () => {
   const energyPct     = Math.max(0, Math.min(100, (displayEnergy / maxEnergy) * 100));
   const energyLow     = energyPct <= 30;
 
-  /* modal state */
   const [profileOpen,  setProfileOpen]  = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [showPage8,    setShowPage8]    = useState(false);
 
-  /* tournament countdown */
   const [timeLeft, setTimeLeft] = useState("--:--:--");
   useEffect(() => { dispatch(fetchTournaments()); }, [dispatch]);
   useEffect(() => {
@@ -121,7 +113,6 @@ const Home = () => {
     return () => clearInterval(id);
   }, [tournaments]);
 
-  /* tap refs */
   const floatIdRef   = useRef(0);
   const tapBufferRef = useRef(0);
   const tapTimerRef  = useRef(null);
@@ -176,7 +167,6 @@ const Home = () => {
     { src: layout6, label: "BETON",   action: () => {} },
   ];
 
-  /* TAP image size */
   const TAP_SIZE = 150;
 
   return (
@@ -199,12 +189,16 @@ const Home = () => {
         <FloatingLabel key={f.id} x={f.x} y={f.y} value={fmtShort(faPerTap)} />
       ))}
 
-      {/* ══ LOGO ══ */}
+      {/* ══ LOGO
+          - dvh height so it shrinks proportionally on tall screens
+          - On 844px screen: 14dvh ≈ 118px (same as before)
+          - On 932px Pro Max: 14dvh ≈ 130px but capped at 120px
+      ══ */}
       <img
         src={logoImg}
         alt="DRUN FAMILY"
         style={{
-          height: "clamp(100px,20vw,200px)",
+          height: "clamp(80px,14dvh,120px)",
           width: "80%",
           marginLeft: "auto", marginRight: "auto",
           objectFit: "contain", display: "block", flexShrink: 0,
@@ -212,8 +206,11 @@ const Home = () => {
         }}
       />
 
-      {/* ══ PROFILE ROW ══ */}
-      <div className="flex items-center bg-neutral-900 rounded-xl shrink-0 w-full mx-1 mt-1">
+      {/* ══ PROFILE ROW — mt uses dvh so it stays tight on tall screens ══ */}
+      <div
+        className="flex items-center bg-neutral-900 rounded-xl shrink-0 w-full mx-1"
+        style={{ marginTop: "0.8dvh" }}
+      >
         <div className="flex items-center w-full px-3 py-2 gap-1">
           <div className="relative shrink-0 cursor-pointer" onClick={() => setProfileOpen(true)}>
             <img
@@ -253,7 +250,7 @@ const Home = () => {
 
           <button
             onClick={(e) => { e.stopPropagation(); setWithdrawOpen(true); }}
-            className="shrink-0 font-black uppercase cursor-pointer text-[10px] ml-3"
+            className="shrink-0 font-black uppercase cursor-pointer text-[12px]"
             style={{ ...GOLD_BTN, borderRadius: 18, padding: "6px 14px", color: "#fff", letterSpacing: "0.05em", whiteSpace: "nowrap" }}
           >
             ВЫВОД
@@ -261,42 +258,55 @@ const Home = () => {
         </div>
       </div>
 
-      {/* ══ BALANCE ══ */}
-      <div className="flex items-center justify-center shrink-0 gap-1 py-1 mb-[-10px]">
+      {/* ══ BALANCE — dvh padding keeps it compact on tall screens ══ */}
+      <div
+        className="flex items-center justify-center shrink-0 gap-1"
+        style={{ paddingTop: "0.8dvh", paddingBottom: "0.4dvh" }}
+      >
         <img src={coinImage} alt="fa" className="w-14 h-14 object-contain" />
         <span
           className="text-white font-black"
           style={{
-            fontFamily: 'Days One',
+            fontFamily: "Days One",
             fontSize: "clamp(22px,4vw,26px)",
             letterSpacing: "0.06em",
-            textShadow: "0 2px 10px rgba(0,0,0,0.9)"
+            textShadow: "0 2px 10px rgba(0,0,0,0.9)",
           }}
         >
           {fmtFa(displayFa)}
         </span>
       </div>
 
-      {/* ══ RATES ══ */}
-      <div className="flex items-center justify-center shrink-0 gap-2.5 pb-1">
+      {/* ══ RATES — dvh padding ══ */}
+      <div
+        className="flex items-center justify-center shrink-0 gap-2.5"
+        style={{ paddingBottom: "0.8dvh" }}
+      >
         <div className="flex items-center gap-1.5 px-2 rounded-full"
           style={{ background: "linear-gradient(180deg,#5ecb1a,#3a9010)", border: "2px solid #2a6a08", boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
-          <span className="text-black font-extrabold text-[8px] whitespace-nowrap">
+          <span className="text-white font-black text-[8px] whitespace-nowrap">
             {stateLoading ? "..." : `${fmtShort(faPerHour)}В/час`}
           </span>
-          <FaSackDollar color="#000" size={9} />
+          <FaSackDollar color="#fff" size={9} />
         </div>
         <div className="flex items-center gap-1.5 px-2 rounded-full"
           style={{ background: "linear-gradient(180deg,#f0a800,#c87800)", border: "2px solid #8a5500", boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
-          <span className="text-black font-extrabold text-[8px] whitespace-nowrap">
+          <span className="text-white font-black text-[8px] whitespace-nowrap">
             {stateLoading ? "..." : `${fmtShort(faPerTap)}М/тап`}
           </span>
-          <PiCursorClick color="#000" size={9} />
+          <PiCursorClick color="#fff" size={9} />
         </div>
       </div>
 
-      {/* ══ BATTLE AREA ══ */}
-      <div className="flex-1 min-h-0 flex flex-col mt-0">
+      {/* ══ BATTLE AREA
+          KEY FIX: maxHeight caps this section so extra screen height
+          doesn't create a huge gap between rates and bottom buttons.
+          flex-1 still works for short screens, maxHeight kicks in on tall ones.
+      ══ */}
+      <div
+        className="min-h-0 flex flex-col"
+        style={{ flex: "1 1 0", maxHeight: "40dvh" }}
+      >
         <div className="flex items-center justify-between flex-1 px-2">
           <div className="flex flex-col gap-1.5 items-center">
             {leftIcons.map(({ src, label, action }) => (
@@ -304,7 +314,6 @@ const Home = () => {
             ))}
           </div>
 
-          {/* Tap button — 150px, ТАП text larger and positioned below */}
           <div
             onTouchStart={handleTap}
             onClick={handleTap}
@@ -328,10 +337,8 @@ const Home = () => {
               viewBox={`0 0 ${TAP_SIZE} 48`}
               style={{
                 position: "absolute",
-                bottom: -6,
-                left: 0,
-                width: TAP_SIZE,
-                height: 48,
+                bottom: -6, left: 0,
+                width: TAP_SIZE, height: 48,
                 pointerEvents: "none",
               }}
             >
@@ -352,8 +359,14 @@ const Home = () => {
         </div>
       </div>
 
-      {/* ══ BOTTOM BUTTONS — above SnackBar ══ */}
-      <div className="relative z-20 w-[92%] mx-auto flex flex-col gap-1 pb-14 mt-0 shrink-0">
+      {/* ══ BOTTOM BUTTONS
+          pb uses dvh (14dvh ≈ snackbar height) instead of fixed pb-14
+          gap uses dvh so it stays tight on tall screens
+      ══ */}
+      <div
+        className="relative z-20 w-[92%] mx-auto flex flex-col shrink-0"
+        style={{ gap: "1dvh", paddingBottom: "14dvh" }}
+      >
         {/* Timer */}
         <div
           onClick={() => navigate("/nine")}
