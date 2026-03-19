@@ -52,18 +52,23 @@ const fmtShort = (n) => {
   return String(Math.floor(n));
 };
 
+/* ─── Gold style (ВЫВОД button) ─────────────────────────────── */
 const GOLD_BTN = {
   background: "linear-gradient(180deg,#deba00,#c87800)",
   border: "2.5px solid #af8700",
   boxShadow: "0 3px 8px rgba(175,135,0,0.55)",
 };
 
+/* ─── Gold style from HomeBottomButtons (timer/energy/улучшай) ─ */
 const GOLD = {
   background: "linear-gradient(180deg,#f0a800 0%,#da9d01 50%,#b87e00 100%)",
   border: "2px solid #b58030",
   boxShadow: "0 5px 0 #7a4e00, 0 7px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.25)",
 };
 
+/* ═══════════════════════════════════════════════════════════════
+   HOME — all state merged, zero child boundary on tap path
+═══════════════════════════════════════════════════════════════ */
 const Home = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -81,6 +86,7 @@ const Home = () => {
   const progress     = (levelInMain / 10) * 100;
   const maxEnergy    = 1000;
 
+  /* optimistic tap state */
   const [localFa,     setLocalFa]     = useState(null);
   const [localEnergy, setLocalEnergy] = useState(null);
   const [tapping,     setTapping]     = useState(false);
@@ -91,10 +97,12 @@ const Home = () => {
   const energyPct     = Math.max(0, Math.min(100, (displayEnergy / maxEnergy) * 100));
   const energyLow     = energyPct <= 30;
 
+  /* modal state */
   const [profileOpen,  setProfileOpen]  = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [showPage8,    setShowPage8]    = useState(false);
 
+  /* tournament countdown */
   const [timeLeft, setTimeLeft] = useState("--:--:--");
   useEffect(() => { dispatch(fetchTournaments()); }, [dispatch]);
   useEffect(() => {
@@ -113,6 +121,7 @@ const Home = () => {
     return () => clearInterval(id);
   }, [tournaments]);
 
+  /* tap refs */
   const floatIdRef   = useRef(0);
   const tapBufferRef = useRef(0);
   const tapTimerRef  = useRef(null);
@@ -167,6 +176,7 @@ const Home = () => {
     { src: layout6, label: "BETON",   action: () => {} },
   ];
 
+  /* TAP image size */
   const TAP_SIZE = 150;
 
   return (
@@ -189,17 +199,12 @@ const Home = () => {
         <FloatingLabel key={f.id} x={f.x} y={f.y} value={fmtShort(faPerTap)} />
       ))}
 
-      {/* ══ LOGO
-            clamp: min=70px, preferred=13dvh (scales with screen height), max=130px
-            On 844px (iPhone 13): 13dvh = ~110px — same as before
-            On 932px (iPhone 14 Max): 13dvh = ~121px — slightly taller but capped at 130px
-            This stops the logo from growing and eating space on Pro Max screens
-      ══ */}
+      {/* ══ LOGO ══ */}
       <img
         src={logoImg}
         alt="DRUN FAMILY"
         style={{
-          height: "clamp(70px,13dvh,130px)",
+          height: "clamp(100px,20vw,200px)",
           width: "80%",
           marginLeft: "auto", marginRight: "auto",
           objectFit: "contain", display: "block", flexShrink: 0,
@@ -208,7 +213,7 @@ const Home = () => {
       />
 
       {/* ══ PROFILE ROW ══ */}
-      <div className="flex items-center bg-neutral-900 rounded-xl shrink-0 w-full mx-1" style={{ marginTop: "1dvh" }}>
+      <div className="flex items-center bg-neutral-900 rounded-xl shrink-0 w-full mx-1 mt-1">
         <div className="flex items-center w-full px-3 py-2 gap-1">
           <div className="relative shrink-0 cursor-pointer" onClick={() => setProfileOpen(true)}>
             <img
@@ -256,34 +261,24 @@ const Home = () => {
         </div>
       </div>
 
-      {/* ══ BALANCE
-            py changed from fixed py-1 to dvh-based so it compresses on tall screens
-      ══ */}
-      <div
-        className="flex items-center justify-center shrink-0 gap-1"
-        style={{ paddingBlock: "0.6dvh", marginBottom: "-10px" }}
-      >
+      {/* ══ BALANCE ══ */}
+      <div className="flex items-center justify-center shrink-0 gap-1 py-1 mb-[-10px]">
         <img src={coinImage} alt="fa" className="w-14 h-14 object-contain" />
         <span
           className="text-white font-black"
           style={{
-            fontFamily: "Days One",
+            fontFamily: 'Days One',
             fontSize: "clamp(22px,4vw,26px)",
             letterSpacing: "0.06em",
-            textShadow: "0 2px 10px rgba(0,0,0,0.9)",
+            textShadow: "0 2px 10px rgba(0,0,0,0.9)"
           }}
         >
           {fmtFa(displayFa)}
         </span>
       </div>
 
-      {/* ══ RATES
-            pb changed to dvh-based
-      ══ */}
-      <div
-        className="flex items-center justify-center shrink-0 gap-2.5"
-        style={{ paddingBottom: "0.6dvh" }}
-      >
+      {/* ══ RATES ══ */}
+      <div className="flex items-center justify-center shrink-0 gap-2.5 pb-1">
         <div className="flex items-center gap-1.5 px-2 rounded-full"
           style={{ background: "linear-gradient(180deg,#5ecb1a,#3a9010)", border: "2px solid #2a6a08", boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
           <span className="text-black font-extrabold text-[8px] whitespace-nowrap">
@@ -300,11 +295,8 @@ const Home = () => {
         </div>
       </div>
 
-      {/* ══ BATTLE AREA
-            flex-1 + max-height cap so it can't grow indefinitely on tall screens.
-            maxHeight: 42dvh keeps the tap area proportional regardless of phone height.
-      ══ */}
-      <div className="flex-1 min-h-0 flex flex-col" style={{ maxHeight: "42dvh" }}>
+      {/* ══ BATTLE AREA ══ */}
+      <div className="flex-1 min-h-0 flex flex-col mt-0">
         <div className="flex items-center justify-between flex-1 px-2">
           <div className="flex flex-col gap-1.5 items-center">
             {leftIcons.map(({ src, label, action }) => (
@@ -312,6 +304,7 @@ const Home = () => {
             ))}
           </div>
 
+          {/* Tap button — 150px, ТАП text larger and positioned below */}
           <div
             onTouchStart={handleTap}
             onClick={handleTap}
@@ -359,13 +352,8 @@ const Home = () => {
         </div>
       </div>
 
-      {/* ══ BOTTOM BUTTONS
-            gap and pb converted to dvh so they stay tight on tall screens
-      ══ */}
-      <div
-        className="relative z-20 w-[92%] mx-auto flex flex-col shrink-0"
-        style={{ gap: "0.8dvh", paddingBottom: "14dvh" }}
-      >
+      {/* ══ BOTTOM BUTTONS — above SnackBar ══ */}
+      <div className="relative z-20 w-[92%] mx-auto flex flex-col gap-1 pb-14 mt-0 shrink-0">
         {/* Timer */}
         <div
           onClick={() => navigate("/nine")}
