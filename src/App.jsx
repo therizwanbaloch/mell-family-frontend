@@ -22,8 +22,6 @@ import Page24   from "./pages/Page24";
 import TelegramSetup from "./components/TelegramSetup";
 import { useTelegram } from "./hooks/useTelegram";
 import MobileOnly from "./MobileOnly";
-import NewShop from "./pages/NewShop";
-import BonusSection from "./components/BonusCard";
 
 function App() {
   const dispatch = useDispatch();
@@ -94,7 +92,6 @@ function App() {
         <Route path="/page24" element={<Page24 />} />
         <Route path="/page25" element={<Page25 />} />
         <Route path="/page26" element={<Page26 />} />
-        <Route path="/new" element={<NewShop />} />
       </Routes>
     </>
   );
