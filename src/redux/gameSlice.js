@@ -15,7 +15,7 @@ import {
   placeBet,
 } from '../api'
 
-// ── Async Thunks ─────────────────────────────────────────────
+// ── Async Thunks ─────────────────────────────
 
 export const fetchState = createAsyncThunk(
   'game/fetchState',
@@ -51,9 +51,14 @@ export const doUpgradeImprovement = createAsyncThunk(
 
 export const doClaimDaily = createAsyncThunk(
   'game/claimDaily',
-  async (_, { rejectWithValue }) => {
-    try { return await claimDaily() }
-    catch (err) { return rejectWithValue(err.message) }
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await claimDaily()
+      dispatch(fetchState())
+      return res
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
   }
 )
 
@@ -121,38 +126,29 @@ export const doPlaceBet = createAsyncThunk(
   }
 )
 
-// ── Slice ────────────────────────────────────────────────────
+// ── Slice ───────────────────────────────────
 
 const gameSlice = createSlice({
   name: 'game',
   initialState: {
-    user:               null,
-    rates:              null,
-    characters:         null,
-    improvements:       null,
-    inventory:          null,
-    tournaments:        null,
-    ticketLeaderboard:  [],
-    usdtLeaderboard:    [],
-    stateLoading:       false,
-    stateError:         null,
-    actionLoading:      false,
-    actionError:        null,
+    user: null,
+    rates: null,
+    characters: null,
+    improvements: null,
+    inventory: null,
+    tournaments: null,
+    ticketLeaderboard: [],
+    usdtLeaderboard: [],
+    stateLoading: false,
+    stateError: null,
+    actionLoading: false,
+    actionError: null,
   },
 
   reducers: {
-    // clear any action error shown in UI
     clearActionError(state) {
       state.actionError = null
     },
-
-    // patch any fields on state.user without a full re-fetch
-    // Used by slots/games for optimistic balance updates.
-    //
-    // Usage:
-    //   dispatch(patchUser({ fa: newVal }))
-    //   dispatch(patchUser({ chips: newVal }))
-    //   dispatch(patchUser({ chips: newChips, usdt: newUsdt }))
     patchUser(state, action) {
       if (state.user) {
         state.user = { ...state.user, ...action.payload }
@@ -161,117 +157,86 @@ const gameSlice = createSlice({
   },
 
   extraReducers: (builder) => {
-
-    // ── fetchState ──────────────────────────────────────────
+    // ── fetchState ──
     builder
       .addCase(fetchState.pending, (state) => {
         state.stateLoading = true
-        state.stateError   = null
       })
       .addCase(fetchState.fulfilled, (state, action) => {
         state.stateLoading = false
         const data = action.payload
-        state.user         = data.user         ?? state.user
-        state.rates        = data.rates        ?? state.rates
-        state.characters   = data.characters   ?? state.characters
+        state.user = data.user ?? state.user
+        state.rates = data.rates ?? state.rates
+        state.characters = data.characters ?? state.characters
         state.improvements = data.improvements ?? state.improvements
-        state.inventory    = data.inventory    ?? state.inventory
+        state.inventory = data.inventory ?? state.inventory
+        state.tournaments = data.tournaments ?? state.tournaments
       })
       .addCase(fetchState.rejected, (state, action) => {
         state.stateLoading = false
-        state.stateError   = action.payload
+        state.stateError = action.payload
       })
 
-    // ── doTap ───────────────────────────────────────────────
+    // ── fetchTournaments (FIXED) ──
+    builder.addCase(fetchTournaments.fulfilled, (state, action) => {
+      state.tournaments = action.payload
+    })
+
+    // ── doTap ──
+    builder.addCase(doTap.fulfilled, (state, action) => {
+      if (action.payload?.user) {
+        state.user = { ...state.user, ...action.payload.user }
+      }
+    })
+
+    // ── DAILY CLAIM ──
     builder
-      .addCase(doTap.pending,   (state) => { state.actionLoading = true })
-      .addCase(doTap.fulfilled, (state, action) => {
+      .addCase(doClaimDaily.pending, (state) => {
+        state.actionLoading = true
+        state.actionError = null
+      })
+      .addCase(doClaimDaily.fulfilled, (state, action) => {
         state.actionLoading = false
-        if (action.payload?.user) {
-          state.user = { ...state.user, ...action.payload.user }
+        const reward = action.payload
+        if (reward?.user) {
+          state.user = { ...state.user, ...reward.user }
+        } else if (reward?.amount && state.user) {
+          state.user.balance = (state.user.balance || 0) + reward.amount
+        }
+        if (reward?.tickets && state.user) {
+          state.user.tickets = (state.user.tickets || 0) + reward.tickets
         }
       })
-      .addCase(doTap.rejected,  (state, action) => {
+      .addCase(doClaimDaily.rejected, (state, action) => {
         state.actionLoading = false
-        state.actionError   = action.payload
+        state.actionError = action.payload
       })
 
-    // ── doUpgradeCharacter ──────────────────────────────────
-    builder
-      .addCase(doUpgradeCharacter.pending,   (state) => { state.actionLoading = true })
-      .addCase(doUpgradeCharacter.fulfilled, (state) => { state.actionLoading = false })
-      .addCase(doUpgradeCharacter.rejected,  (state, action) => {
-        state.actionLoading = false
-        state.actionError   = action.payload
-      })
+    // ── Other actions ──
+    const actionCases = [
+      doUpgradeCharacter,
+      doUpgradeImprovement,
+      doStoreBuy,
+      doOpenBox,
+      doClaimDrunRoad
+    ]
+    actionCases.forEach(thunk => {
+      builder
+        .addCase(thunk.pending, (state) => { state.actionLoading = true })
+        .addCase(thunk.fulfilled, (state) => { state.actionLoading = false })
+        .addCase(thunk.rejected, (state, action) => {
+          state.actionLoading = false
+          state.actionError = action.payload
+        })
+    })
 
-    // ── doUpgradeImprovement ────────────────────────────────
+    // ── Leaderboards ──
     builder
-      .addCase(doUpgradeImprovement.pending,   (state) => { state.actionLoading = true })
-      .addCase(doUpgradeImprovement.fulfilled, (state) => { state.actionLoading = false })
-      .addCase(doUpgradeImprovement.rejected,  (state, action) => {
-        state.actionLoading = false
-        state.actionError   = action.payload
-      })
-
-    // ── doClaimDaily ────────────────────────────────────────
-    builder
-      .addCase(doClaimDaily.pending,   (state) => { state.actionLoading = true })
-      .addCase(doClaimDaily.fulfilled, (state) => { state.actionLoading = false })
-      .addCase(doClaimDaily.rejected,  (state, action) => {
-        state.actionLoading = false
-        state.actionError   = action.payload
-      })
-
-    // ── doStoreBuy ──────────────────────────────────────────
-    builder
-      .addCase(doStoreBuy.pending,   (state) => { state.actionLoading = true })
-      .addCase(doStoreBuy.fulfilled, (state) => { state.actionLoading = false })
-      .addCase(doStoreBuy.rejected,  (state, action) => {
-        state.actionLoading = false
-        state.actionError   = action.payload
-      })
-
-    // ── doOpenBox ───────────────────────────────────────────
-    builder
-      .addCase(doOpenBox.pending,   (state) => { state.actionLoading = true })
-      .addCase(doOpenBox.fulfilled, (state) => { state.actionLoading = false })
-      .addCase(doOpenBox.rejected,  (state, action) => {
-        state.actionLoading = false
-        state.actionError   = action.payload
-      })
-
-    // ── doClaimDrunRoad ─────────────────────────────────────
-    builder
-      .addCase(doClaimDrunRoad.pending,   (state) => { state.actionLoading = true })
-      .addCase(doClaimDrunRoad.fulfilled, (state) => { state.actionLoading = false })
-      .addCase(doClaimDrunRoad.rejected,  (state, action) => {
-        state.actionLoading = false
-        state.actionError   = action.payload
-      })
-
-    // ── tournaments / leaderboards ──────────────────────────
-    builder
-      .addCase(fetchTournaments.fulfilled, (state, action) => {
-        state.tournaments = action.payload
-      })
       .addCase(fetchTicketLeaderboard.fulfilled, (state, action) => {
-        const p = action.payload
-        state.ticketLeaderboard = Array.isArray(p)
-          ? p
-          : (p?.leaderboard ?? p?.entries ?? p?.players ?? [])
+        state.ticketLeaderboard = action.payload || []
       })
       .addCase(fetchUsdtLeaderboard.fulfilled, (state, action) => {
-        state.usdtLeaderboard = action.payload
-      })
-
-    // ── doPlaceBet ──────────────────────────────────────────
-    builder
-      .addCase(doPlaceBet.pending,   (state) => { state.actionLoading = true })
-      .addCase(doPlaceBet.fulfilled, (state) => { state.actionLoading = false })
-      .addCase(doPlaceBet.rejected,  (state, action) => {
-        state.actionLoading = false
-        state.actionError   = action.payload
+        state.usdtLeaderboard = action.payload || []
       })
   },
 })

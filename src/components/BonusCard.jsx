@@ -19,7 +19,7 @@ const BonusCard = ({
       {/* Left — texts */}
       <div className='flex flex-col gap-0.5'>
         <span
-          className='text-xs font-semibold'
+          className='text-lg font-semibold'
           style={{ color: '#d9d9d9' }}
         >
           {title}

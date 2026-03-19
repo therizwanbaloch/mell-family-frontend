@@ -2,8 +2,9 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import pageBg     from '../assets/page1bg.webp';
+import logoDark   from "../assets/logo-darkk.webp";
 import usdtIcon   from '../assets/page23Images/usdt-icon.webp';
-import fishkiIcon from '../assets/page22Images/fa-icon.webp';
+import fishkiIcon from '../assets/page23Images/chips.webp';
 import slotGameImg  from '../assets/page23Images/slot-game.webp';
 import planeGameImg from '../assets/page23Images/plane-game.webp';
 import fogMinesImg  from '../assets/page23Images/fog-mines.webp';
@@ -17,10 +18,8 @@ function formatNum(n) {
   return String(n);
 }
 
-/* ── Balance bar ── */
 const BalanceBar = ({ usdt, fishki, onAddFishki }) => (
   <div style={{ display:'flex', gap:8, padding:'8px 10px 6px', flexShrink:0 }}>
-
     {/* USDT */}
     <div style={{
       flex:1, display:'flex', alignItems:'center', gap:6,
@@ -41,9 +40,9 @@ const BalanceBar = ({ usdt, fishki, onAddFishki }) => (
     {/* ФИШКИ */}
     <div style={{
       flex:1, display:'flex', alignItems:'center', gap:6,
-      background:'linear-gradient(180deg,#2a7a10,#1a5008)',
-      borderRadius:20, padding:'5px 10px',
-      border:'1.5px solid #4aaa18',
+      background:'#52810f',
+      borderRadius:10, padding:'5px 10px',
+      border:'2px solid #3f6011',
       boxShadow:'0 2px 8px rgba(0,0,0,0.4)',
     }}>
       <img src={fishkiIcon} alt="" style={{ width:28, height:28, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
@@ -57,8 +56,8 @@ const BalanceBar = ({ usdt, fishki, onAddFishki }) => (
         onClick={onAddFishki}
         style={{
           width:28, height:28, borderRadius:8,
-          background:'linear-gradient(180deg,#5aba20,#2a8008)',
-          border:'1.5px solid #7ade30',
+          background:'#53a00d',
+          border:'1px solid #2c3d13',
           display:'flex', alignItems:'center', justifyContent:'center',
           fontWeight:900, fontSize:18, color:'#fff',
           flexShrink:0, cursor:'pointer',
@@ -68,7 +67,6 @@ const BalanceBar = ({ usdt, fishki, onAddFishki }) => (
   </div>
 );
 
-/* ── Gold card: text left, image right ── */
 const GameCardGold = ({ title, desc, image, onPlay }) => (
   <div style={{
     background:'linear-gradient(180deg,#7a5500,#4a3200)',
@@ -105,7 +103,6 @@ const GameCardGold = ({ title, desc, image, onPlay }) => (
   </div>
 );
 
-/* ── Gray card: image left, text right ── */
 const GameCardGray = ({ title, desc, image, onPlay }) => (
   <div style={{
     background:'linear-gradient(180deg,#4a4a4a,#2a2a2a)',
@@ -142,7 +139,6 @@ const GameCardGray = ({ title, desc, image, onPlay }) => (
   </div>
 );
 
-/* ── Coming soon ── */
 const ComingSoonCard = () => (
   <div style={{
     background:'linear-gradient(180deg,#3a3a3a,#1e1e1e)',
@@ -160,22 +156,15 @@ const ComingSoonCard = () => (
   </div>
 );
 
-/* ══════════════════════════════════════
-   PAGE 23 — ИГРЫ  (Redux-connected)
-══════════════════════════════════════ */
 const Page23 = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  /* ── Redux state ── */
   const user   = useSelector(s => s.game.user);
-  const rates  = useSelector(s => s.game.rates);
-
   const usdt   = user?.usdt_balance   ?? 0;
-  const fishki = user?.chips          ?? user?.fishki_balance ?? 0;
+  const fishki = user?.chips ?? user?.fishki_balance ?? 0;
 
-  /* + button → navigate to shop (page 21) */
-  const handleAddFishki = () => navigate('/page21');
+  const handleAddFishki = () => navigate('/shop');
 
   return (
     <div style={{
@@ -183,36 +172,29 @@ const Page23 = () => {
       backgroundSize:'cover', backgroundPosition:'center',
       maxWidth:430, margin:'0 auto',
       height:'100dvh', overflow:'hidden',
-      display:'flex', flexDirection:'column',
+      display:'flex', flexDirection:'column', fontFamily: "'Nunito', sans-serif",
     }}>
 
       {/* ── HEADER ── */}
-      <div style={{
-        background:'linear-gradient(180deg,#c8c8c8,#a0a0a0)',
-        display:'flex', flexDirection:'column', alignItems:'center',
-        paddingTop:6, paddingBottom:2, flexShrink:0,
-      }}>
-        <span style={{ fontWeight:900, color:'#000', textTransform:'uppercase', letterSpacing:'0.2em', fontSize:11 }}>
-          DRUN FAMILY
-        </span>
-        <div style={{ display:'flex', alignItems:'center', width:'100%', padding:'1px 16px' }}>
-          <div style={{ flex:1, height:1, background:'linear-gradient(90deg,transparent,#000)' }} />
-          <span style={{ fontWeight:700, color:'#000', fontSize:8, letterSpacing:'0.3em', textTransform:'uppercase', margin:'0 8px' }}>GAME</span>
-          <div style={{ flex:1, height:1, background:'linear-gradient(90deg,#000,transparent)' }} />
+      <div style={{ background: "#dbdbdb", padding: "4px 0", flexShrink: 0, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+        <div style={{ width: 130, height: 28, position: "relative", margin: "0 auto" }}>
+          <img 
+            src={logoDark} 
+            alt="Logo" 
+            style={{ position: "absolute", width: 210, top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} 
+          />
         </div>
-        <span style={{
-          fontWeight:900, fontStyle:'italic', textTransform:'uppercase',
-          fontSize:'clamp(22px,7vw,30px)', letterSpacing:'0.08em',
-          color:'#c8c8c8',
-          textShadow:'0 2px 0 #606060, 0 0 20px rgba(200,200,200,0.4)',
-          WebkitTextStroke:'1px #808080', lineHeight:1,
-        }}>ИГРЫ</span>
+        <div style={{ textAlign: "center", marginTop: "0px" }}>
+          <span style={{ 
+            fontWeight: 900, textTransform: 'uppercase',  
+            fontSize: "18px", color: "#b4b4b4", WebkitTextStroke: "1.5px black", lineHeight: 1
+          }}> игры </span>
+        </div>
       </div>
 
       {/* ── BODY ── */}
-      <div style={{ flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch', paddingBottom:90 }}>
-
-        {/* Balance bar — live from Redux */}
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 90 }}>
+        
         <BalanceBar
           usdt={usdt}
           fishki={fishki}
@@ -220,34 +202,28 @@ const Page23 = () => {
         />
 
         <div style={{ padding:'0 10px' }}>
-
-          {/* 1. Бурмалда — not ready yet per requirements, still shown */}
           <GameCardGold
             title="Бурмалда"
-            desc="Старые добрые слоты с огромным заработком и бесплатными вращениями!"
+            desc={"Старые добрые слоты с\nогромным заработком и\nбесплатными вращениями!"}
             image={slotGameImg}
             onPlay={() => navigate('/page24')}
           />
 
-          {/* 2. Самолетик Бурмалдотик */}
           <GameCardGray
             title={"Самолетик\nБурмалдотик"}
-            desc="Подними свои USDT и Фишки в небеса вместе с частным самолетом мела!"
+            desc={"Подними свои USDT и\nФишки в небеса вместе с\nчастным самолетом мела!"}
             image={planeGameImg}
             onPlay={() => navigate('/page25')}
           />
 
-          {/* 3. FOG mines */}
           <GameCardGold
             title="FOG mines"
-            desc="Ищи Фишки в одной из многоэтажек Мурино, только не наткнись на Фога!"
+            desc={"Ищи Фишки в одной из\nмногоэтажек Мурино,\nтолько не наткнись на Фога!"}
             image={fogMinesImg}
             onPlay={() => navigate('/page26')}
           />
 
-          {/* 4. Coming soon */}
           <ComingSoonCard />
-
         </div>
       </div>
 

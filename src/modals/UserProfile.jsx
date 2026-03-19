@@ -3,7 +3,6 @@ import userProfileImage from "../assets/page1bg.webp";
 import usdtIcon from "../assets/UserProfileImages/usdtIcon.webp";
 import btn1Icon from "../assets/UserProfileImages/OaIconProfilecard.webp";
 import btn2Icon from "../assets/UserProfileImages/gameIcons.webp";
-import btn3Icon from "../assets/UserProfileImages/gameIcons.webp";
 import btn4Icon from "../assets/UserProfileImages/paCardIcon.webp";
 import { IoAddCircle } from 'react-icons/io5';
 import BonusCard from '../components/BonusCard';
@@ -31,21 +30,18 @@ const UserProfile = ({ isOpen, onClose }) => {
   const isReady      = !!user
   const playerName   = user?.username || user?.first_name || 'PLAYER'
   const profileLevel = user?.profile_level ?? 1
-  const mainLevel    = user?.main_level    ?? 1
-  const levelInMain  = ((profileLevel - 1) % 10) + 1
-  const progress     = (levelInMain / 10) * 100
+  const mainLevel     = user?.main_level    ?? 1
+  const levelInMain   = ((profileLevel - 1) % 10) + 1
+  const progress      = (levelInMain / 10) * 100
 
-  // Balances
   const fa      = user?.fa      ?? 0
   const usdt    = user?.usdt    ?? 0
   const chips   = user?.chips   ?? 0
   const tickets = user?.tickets ?? 0
 
-  // Daily bonus
   const canClaimDaily = user?.daily_last_claim !== new Date().toISOString().split('T')[0]
   const dailyDay      = (user?.daily_day ?? 0) + 1
 
-  // Active buffs
   const now = Math.floor(Date.now() / 1000)
   const activeBonuses = []
   if (user?.x12_until_ts > now) activeBonuses.push(`x12 множитель до ${new Date(user.x12_until_ts * 1000).toLocaleTimeString()}`)
@@ -54,7 +50,6 @@ const UserProfile = ({ isOpen, onClose }) => {
   if (user?.x2_until_ts  > now) activeBonuses.push(`x2 множитель до ${new Date(user.x2_until_ts  * 1000).toLocaleTimeString()}`)
   if (user?.tap_perm_20   === 1) activeBonuses.push('Постоянный +20% к тапу')
 
-  // Format number with spaces
   const fmt = (n) => Math.floor(n ?? 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0')
   const fmtUsdt = (n) => Number(n ?? 0).toFixed(2)
 
@@ -63,12 +58,12 @@ const UserProfile = ({ isOpen, onClose }) => {
     dispatch(fetchState())
   }
 
-  // Build bonus cards from profile level rewards + daily
+  // СУЩЕСТВЕННОЕ ИЗМЕНЕНИЕ: Сократили текст для экономии места
   const bonusCards = [
     {
-      title: `Ежедневный бонус (день ${dailyDay})`,
-      subtitle: 'Фишки + награда',
-      buttonText: canClaimDaily ? 'Забрать' : 'Получено',
+      title: `Бонус (день ${dailyDay})`,
+      subtitle: 'Заходи каждый день',
+      buttonText: canClaimDaily ? 'Забрать' : 'Ожидайте',
       disabled: !canClaimDaily || actionLoading,
       onPress: canClaimDaily ? handleClaimDaily : null,
     },
@@ -80,6 +75,14 @@ const UserProfile = ({ isOpen, onClose }) => {
         @keyframes skelPulse {
           0%,100% { opacity: 0.35; }
           50%      { opacity: 0.75; }
+        }
+        /* Фикс для переполнения текста в BonusCard */
+        .bonus-card-fix span {
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
       `}</style>
 
@@ -122,7 +125,6 @@ const UserProfile = ({ isOpen, onClose }) => {
                 alt='profile'
                 className='w-14 h-14 rounded-full object-cover'
               />
-              {/* Level diamond badge */}
               <div
                 className='absolute -bottom-1 -right-1 w-5 h-5 rotate-45 flex items-center justify-center'
                 style={{
@@ -137,7 +139,7 @@ const UserProfile = ({ isOpen, onClose }) => {
 
             <div className='flex flex-col flex-1 min-w-0 gap-1.5'>
               {isReady
-                ? <span className='text-yellow-400 text-sm font-black tracking-wide' style={{ textShadow: '0 0 6px rgba(255,215,0,0.3)' }}>
+                ? <span className='text-yellow-400 text-sm font-black tracking-wide truncate' style={{ textShadow: '0 0 6px rgba(255,215,0,0.3)' }}>
                     {playerName}
                   </span>
                 : <Skel w="100px" h="14px" />
@@ -145,7 +147,6 @@ const UserProfile = ({ isOpen, onClose }) => {
 
               {/* XP bar with diamonds */}
               <div className='flex items-center gap-1.5'>
-                {/* Left diamond */}
                 <div className='relative flex-shrink-0 w-5 h-5 flex items-center justify-center'>
                   <div className='w-4 h-4 rotate-45' style={{
                     background: 'linear-gradient(135deg, #FFE033 0%, #deba00 60%, #c9a800 100%)',
@@ -172,7 +173,6 @@ const UserProfile = ({ isOpen, onClose }) => {
                   </div>
                 </div>
 
-                {/* Right diamond */}
                 <div className='relative flex-shrink-0 w-5 h-5 flex items-center justify-center'>
                   <div className='w-4 h-4 rotate-45' style={{
                     background: 'linear-gradient(135deg, #4ade80 0%, #16a34a 60%, #15803d 100%)',
@@ -187,8 +187,6 @@ const UserProfile = ({ isOpen, onClose }) => {
 
           {/* 2x2 balance grid */}
           <div className='grid grid-cols-2 gap-2'>
-
-            {/* USDT */}
             <button className='flex items-center gap-2 px-2.5 py-2 rounded-xl w-full active:scale-95 transition-transform' style={{
               backgroundColor: '#deba00', border: '2px solid #af8700',
               boxShadow: '0 3px 0 #7a5800, inset 0 1px 0 rgba(255,255,255,0.2)',
@@ -203,7 +201,6 @@ const UserProfile = ({ isOpen, onClose }) => {
               </div>
             </button>
 
-            {/* ФИШКИ */}
             <button onClick={() => { onClose(); navigate('/shop'); }}
               className='flex items-center gap-2 px-2.5 py-2 rounded-xl w-full active:scale-95 transition-transform' style={{
                 backgroundColor: '#52810f', border: '2px solid #3f6011',
@@ -220,7 +217,6 @@ const UserProfile = ({ isOpen, onClose }) => {
               <IoAddCircle size={18} color='#a3e635' className='flex-shrink-0' />
             </button>
 
-            {/* FA Коины */}
             <button className='flex items-center gap-2 px-2.5 py-2 rounded-xl w-full active:scale-95 transition-transform' style={{
               backgroundColor: '#da9d01', border: '2px solid #b58030',
               boxShadow: '0 3px 0 #7a4e00, inset 0 1px 0 rgba(255,255,255,0.15)',
@@ -235,13 +231,12 @@ const UserProfile = ({ isOpen, onClose }) => {
               </div>
             </button>
 
-            {/* БИЛЕТЫ */}
             <button onClick={() => { onClose(); navigate('/shop'); }}
               className='flex items-center gap-2 px-2.5 py-2 rounded-xl w-full active:scale-95 transition-transform' style={{
                 backgroundColor: '#888784', border: '2px solid #6b6967',
                 boxShadow: '0 3px 0 #4a4846, inset 0 1px 0 rgba(255,255,255,0.08)',
               }}>
-              <img src={btn3Icon} alt='icon' className='w-7 h-7 object-contain flex-shrink-0' />
+              <img src={btn4Icon} alt='icon' className='w-7 h-7 object-contain flex-shrink-0' />
               <div className='flex flex-col items-start flex-1 min-w-0'>
                 <span className='text-[10px] font-bold leading-tight' style={{ color: '#d9d9d9' }}>БИЛЕТЫ</span>
                 {isReady
@@ -251,10 +246,8 @@ const UserProfile = ({ isOpen, onClose }) => {
               </div>
               <IoAddCircle size={18} color='#e5e5e5' className='flex-shrink-0' />
             </button>
-
           </div>
 
-          {/* Divider */}
           <div className='w-full h-px' style={{ backgroundColor: '#737373' }} />
 
           {/* Active bonuses */}
@@ -262,28 +255,30 @@ const UserProfile = ({ isOpen, onClose }) => {
             <span className='text-sm font-black text-white tracking-wide' style={{ textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>
               Активные Бонусы
             </span>
-            {activeBonuses.length > 0
-              ? activeBonuses.map((b, i) => (
-                  <span key={i} className='text-xs font-semibold' style={{ color: '#FFD700' }}>• {b}</span>
-                ))
-              : <span className='text-xs font-semibold' style={{ color: '#9e9e9e' }}>Активных бонусов нет.</span>
-            }
+            <div className='flex flex-col'>
+              {activeBonuses.length > 0
+                ? activeBonuses.map((b, i) => (
+                    <span key={i} className='text-[11px] font-semibold' style={{ color: '#FFD700' }}>• {b}</span>
+                  ))
+                : <span className='text-[11px] font-semibold' style={{ color: '#9e9e9e' }}>Активных бонусов нет.</span>
+              }
+            </div>
           </div>
 
-          {/* Divider */}
           <div className='w-full h-px' style={{ backgroundColor: '#737373' }} />
 
-          {/* Bonus cards */}
+          {/* Bonus cards - С ФИКСОМ ВЫСОТЫ */}
           <div className='flex flex-col gap-2'>
             {bonusCards.map((bonus, index) => (
-              <BonusCard
-                key={index}
-                title={bonus.title}
-                subtitle={bonus.subtitle}
-                buttonText={bonus.buttonText}
-                buttonDisabled={bonus.disabled}
-                onPress={bonus.onPress}
-              />
+              <div key={index} className='bonus-card-fix' style={{ maxHeight: '72px', overflow: 'hidden' }}>
+                <BonusCard
+                  title={bonus.title}
+                  subtitle={bonus.subtitle}
+                  buttonText={bonus.buttonText}
+                  buttonDisabled={bonus.disabled}
+                  onPress={bonus.onPress}
+                />
+              </div>
             ))}
           </div>
 

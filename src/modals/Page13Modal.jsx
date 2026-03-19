@@ -1,205 +1,125 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { IoClose } from 'react-icons/io5';
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 
 const PRIZES = [
-  { place: '1 Место',        reward: '2300 USDT' },
-  { place: '2-5 Место',      reward: '250 USDT'  },
-  { place: '6-10 Место',     reward: '100 USDT'  },
-  { place: '11-50 Место',    reward: '10 USDT'   },
-  { place: '51-250 Место',   reward: '2 USDT'    },
-  { place: '251-500 Место',  reward: '1 USDT'    },
-  { place: '501-750 Место',  reward: '0.5 USDT'  },
-  { place: '751-1000 Место', reward: '0.1 USDT'  },
-  { place: '1000+ Место',    reward: '0 USDT'    },
+  { place: "1 Место", reward: "2300 USDT" },
+  { place: "2-5 Место", reward: "250 USDT" },
+  { place: "6-10 Место", reward: "100 USDT" },
+  { place: "11-50 Место", reward: "10 USDT" },
+  { place: "51-250 Место", reward: "2 USDT" },
+  { place: "251-500 Место", reward: "1 USDT" },
+  { place: "501-750 Место", reward: "0.5 USDT" },
+  { place: "751-1000 Место", reward: "0.1 USDT" },
+  { place: "1000+ Место", reward: "0 USDT" },
 ];
 
-// Live countdown from real end_ts — shows DD:HH:MM:SS
 const useEndTsCountdown = (endTs) => {
   const calc = () => {
-    if (!endTs) return '--:--:--:--'
-    const diff = Math.max(0, endTs - Math.floor(Date.now() / 1000))
-    const days = String(Math.floor(diff / 86400)).padStart(2, '0')
-    const h    = String(Math.floor((diff % 86400) / 3600)).padStart(2, '0')
-    const m    = String(Math.floor((diff % 3600) / 60)).padStart(2, '0')
-    const s    = String(diff % 60).padStart(2, '0')
-    return `${days}:${h}:${m}:${s}`
-  }
-  const [display, setDisplay] = useState(calc)
+    if (!endTs) return "--:--:--:--";
+    const ts = endTs > 10000000000 ? Math.floor(endTs / 1000) : endTs;
+    const diff = Math.max(0, ts - Math.floor(Date.now() / 1000));
+    const d = String(Math.floor(diff / 86400)).padStart(2, "0");
+    const h = String(Math.floor((diff % 86400) / 3600)).padStart(2, "0");
+    const m = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
+    const s = String(diff % 60).padStart(2, "0");
+    return `${d}:${h}:${m}:${s}`;
+  };
+  const [display, setDisplay] = useState(calc());
   useEffect(() => {
-    setDisplay(calc())
-    const id = setInterval(() => setDisplay(calc()), 1000)
-    return () => clearInterval(id)
-  }, [endTs])
-  return display
-}
+    const id = setInterval(() => setDisplay(calc()), 1000);
+    return () => clearInterval(id);
+  }, [endTs]);
+  return display;
+};
 
 const Page13Modal = ({ isOpen, onClose }) => {
-  const [visible, setVisible] = useState(false)
-  const [animIn,  setAnimIn]  = useState(false)
+  const [visible, setVisible] = useState(false);
+  const [animIn, setAnimIn] = useState(false);
 
-  // Real end_ts from Redux
-  const { tournaments } = useSelector((s) => s.game)
-  const endTs    = tournaments?.usdt_tournament?.end_ts
-  const countdown = useEndTsCountdown(endTs)
+  const { tournaments } = useSelector((s) => s.game);
+  const tournamentData = tournaments?.usdt_draw || tournaments?.usdt_tournament;
+  const endTs = tournamentData?.end_ts;
+  const countdown = useEndTsCountdown(endTs);
 
   useEffect(() => {
     if (isOpen) {
-      setVisible(true)
-      requestAnimationFrame(() => requestAnimationFrame(() => setAnimIn(true)))
+      setVisible(true);
+      requestAnimationFrame(() => requestAnimationFrame(() => setAnimIn(true)));
     } else {
-      setAnimIn(false)
-      const t = setTimeout(() => setVisible(false), 350)
-      return () => clearTimeout(t)
+      setAnimIn(false);
+      const t = setTimeout(() => setVisible(false), 380);
+      return () => clearTimeout(t);
     }
-  }, [isOpen])
+  }, [isOpen]);
 
-  if (!visible) return null
+  if (!visible) return null;
 
   return (
     <>
-      {/* Backdrop */}
       <div
         onClick={onClose}
-        style={{
-          position: 'fixed', inset: 0, zIndex: 60,
-          backgroundColor: animIn ? 'rgba(0,0,0,0.70)' : 'rgba(0,0,0,0)',
-          backdropFilter: animIn ? 'blur(4px)' : 'blur(0px)',
-          WebkitBackdropFilter: animIn ? 'blur(4px)' : 'blur(0px)',
-          transition: 'all 0.35s ease',
-        }}
+        className={`fixed inset-0 z-50 transition-all duration-300 ${
+          animIn ? "bg-black/70 backdrop-blur-sm" : "bg-black/0"
+        }`}
       />
 
-      {/* Bottom sheet */}
       <div
-        style={{
-          position: 'fixed', bottom: 0, left: '50%',
-          transform: animIn ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(100%)',
-          transition: 'transform 0.35s cubic-bezier(0.32,0.72,0,1)',
-          zIndex: 61,
-          width: '100%', maxWidth: '430px', maxHeight: '88dvh',
-          display: 'flex', flexDirection: 'column',
-          borderRadius: '20px 20px 0 0', overflow: 'hidden',
-          background: '#3a3a3a',
-          borderTop: '1.5px solid #555', borderLeft: '1.5px solid #555', borderRight: '1.5px solid #555',
-          boxShadow: '0 -8px 40px rgba(0,0,0,0.7)',
-        }}
+        className={`fixed bottom-0 left-1/2 z-50 h-[80vh] max-w-[430px] w-full mx-[4px] flex flex-col rounded-t-3xl bg-[#545454] border-2 border-black shadow-2xl transform transition-transform duration-[380ms] ease-[cubic-bezier(0.32,0.72,0,1)] ${
+          animIn ? "translate-y-0 -translate-x-1/2" : "translate-y-full -translate-x-1/2"
+        }`}
       >
-        {/* Drag handle */}
-        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, paddingBottom: 4, flexShrink: 0 }}>
-          <div style={{ width: 36, height: 4, borderRadius: 9999, background: 'rgba(255,255,255,0.2)' }} />
+        <div className="flex justify-center pt-2 pb-1 shrink-0">
+          <div className="w-9 h-1 rounded-full bg-white/20" />
         </div>
 
-        {/* Scrollable body */}
-        <div style={{
-          flex: 1, overflowY: 'auto',
-          padding: 'clamp(10px,3vw,16px) clamp(12px,3vw,18px) clamp(16px,4vw,24px)',
-          display: 'flex', flexDirection: 'column',
-          gap: 'clamp(10px,2.5vw,14px)',
-        }}>
-
-          {/* Close button */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button onClick={onClose} style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '5px 14px', borderRadius: 10,
-              background: 'rgba(255,255,255,0.10)', border: '1.5px solid rgba(255,255,255,0.18)',
-              color: '#fff', fontSize: 'clamp(11px,3vw,13px)', fontWeight: 700,
-              cursor: 'pointer', letterSpacing: '0.04em',
-            }}>
-              <IoClose size={14} color="#ff4444" />
-              Закрыть
+        <div className="flex-1 px-4 pb-4 flex flex-col">
+          {/* Close - Compact */}
+          <div className="flex justify-end mb-2">
+            <button
+              onClick={onClose}
+              className="flex items-center gap-1 rounded-lg px-2 py-1 text-black font-bold text-[12px] bg-[#b4b4b4]"
+            >
+              <span>❌</span> Закрыть
             </button>
           </div>
 
-          {/* Countdown — real backend end_ts */}
-          <div style={{
-            borderRadius: 14,
-            background: 'linear-gradient(180deg,#1e1e1e,#111)',
-            border: '1.5px solid #4a4a4a',
-            padding: 'clamp(12px,3vw,18px) 16px',
-            textAlign: 'center',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 10px rgba(0,0,0,0.4)',
-          }}>
-            <p style={{
-              color: 'rgba(255,255,255,0.55)',
-              fontSize: 'clamp(11px,3vw,14px)', fontWeight: 800,
-              letterSpacing: '0.22em', textTransform: 'uppercase', margin: '0 0 6px',
-            }}>
-              ОСТАЛОСЬ
+          {/* Timer - Tightened Height */}
+          <div className="rounded-xl flex flex-col items-center justify-center py-1.5 mb-2 border-[3px] border-[#dbdbdb] bg-black shrink-0">
+            <p className="text-[#d9d9d9] font-extrabold text-[9px] tracking-widest leading-none mb-1">ОСТАЛОСЬ</p>
+            <p className="font-black text-white text-[24px] leading-none tabular-nums">{countdown}</p>
+          </div>
+
+          {/* Description - Smaller text/padding */}
+          <div className="rounded-md px-2 py-2 mb-2 shrink-0 bg-[#3d3838]">
+            <p className="text-white text-center text-[10px] leading-[1.3]">
+              Каждые две недели проходит огромный турнир. Все билеты <br/> 
+              зачисляются в ставку. По истечению таймера 90% <br/> 
+              билетов сгорают, а победители получают награды:
             </p>
-            <p style={{
-              color: '#fff',
-              fontSize: 'clamp(28px,8vw,42px)', fontWeight: 900,
-              letterSpacing: '0.06em', margin: 0, lineHeight: 1,
-              fontVariantNumeric: 'tabular-nums',
-            }}>
-              {countdown}
-            </p>
-            {/* DD:HH:MM:SS labels */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 0, marginTop: 4 }}>
-              {['дн', 'ч', 'мин', 'сек'].map((label, i) => (
-                <span key={i} style={{
-                  color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: 700,
-                  width: i < 3 ? 'calc((100% - 48px) / 4 + 12px)' : 'auto',
-                  textAlign: 'center', letterSpacing: '0.05em',
-                }}>
-                  {label}
+          </div>
+
+          {/* Table - No Scrolling Needed Now */}
+          <div className="rounded-lg overflow-hidden px-2 py-1 bg-[#3d3838]">
+            {PRIZES.map((row, i) => (
+              <div
+                key={i}
+                className={`flex justify-between items-center ${i !== PRIZES.length - 1 ? 'border-b' : ''}`}
+                style={{ borderColor: "#555" }} 
+              >
+                <span className="text-white font-bold text-[10.5px] py-1.5">{row.place}</span>
+                <span
+                  className="text-[10.5px] font-black"
+                  style={{ color: row.reward === "0 USDT" ? "#999" : "#E1BB2A" }} 
+                >
+                  {row.reward}
                 </span>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-
-          {/* Description */}
-          <div style={{
-            borderRadius: 14,
-            background: 'rgba(0,0,0,0.2)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            padding: 'clamp(12px,3vw,16px) clamp(14px,3.5vw,18px)',
-          }}>
-            <p style={{
-              color: 'rgba(255,255,255,0.88)',
-              fontSize: 'clamp(12px,3.2vw,14px)', fontWeight: 600,
-              lineHeight: 1.7, textAlign: 'center', margin: 0,
-            }}>
-              Каждые две недели проходит огромный турнир. Все твои билеты будут зачислены в твою ставку. По истечению таймера 90% билетов сгорают, а победители получают награды:
-            </p>
-          </div>
-
-          {/* Prize table */}
-          <div style={{
-            borderRadius: 14,
-            background: 'rgba(0,0,0,0.2)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            overflow: 'hidden',
-          }}>
-            {PRIZES.map((row, i) => {
-              const isZero = row.reward === '0 USDT'
-              return (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: 'clamp(10px,2.5vw,13px) clamp(14px,3.5vw,20px)',
-                  borderBottom: i < PRIZES.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none',
-                  background: i % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'transparent',
-                }}>
-                  <span style={{ color: 'rgba(255,255,255,0.92)', fontSize: 'clamp(12px,3.2vw,15px)', fontWeight: 700 }}>
-                    {row.place}
-                  </span>
-                  <span style={{
-                    color: isZero ? 'rgba(255,255,255,0.35)' : '#FFD700',
-                    fontSize: 'clamp(13px,3.5vw,16px)', fontWeight: 900, letterSpacing: '0.03em',
-                  }}>
-                    {row.reward}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default Page13Modal
+export default Page13Modal;

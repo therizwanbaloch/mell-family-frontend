@@ -3,19 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { doUpgradeCharacter, fetchState } from '../redux/gameSlice';
 
-import pageBg       from '../assets/page1bg.webp';
+import pageBg      from '../assets/page1bg.webp';
 import imgDrunstroy from '../assets/page14Images/drunstroy.webp';
 import imgGanzapad  from '../assets/page14Images/ganzapad.webp';
 import imgSub5      from '../assets/page14Images/sub5.webp';
-import imgFaIcon    from '../assets/page14Images/fa_icon.webp';
-import SnackBar from '../components/SnackBar';
+import logoDark     from '../assets/logo-darkk.webp';
+import StoryCard    from '../components/StoryCard';
+import SnackBar     from '../components/SnackBar';
 
 const Skel = ({ className = '' }) => (
-  <div className={`bg-black/10 rounded-lg animate-pulse ${className}`} />
+  <div className={`bg-white/10 rounded animate-pulse ${className}`} />
 )
 
 const useCooldown = (ts) => {
-  const calc = () => ts ? Math.max(0, ts - Math.floor(Date.now() / 1000)) : 0
+  const calc = () => (ts ? Math.max(0, ts - Math.floor(Date.now() / 1000)) : 0)
   const [secs, setSecs] = useState(calc)
   useEffect(() => {
     setSecs(calc())
@@ -26,10 +27,10 @@ const useCooldown = (ts) => {
 }
 
 const fmtTimer = (s) => {
-  const h = Math.floor(s / 3600)
-  const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0')
+  const h   = Math.floor(s / 3600)
+  const m   = String(Math.floor((s % 3600) / 60)).padStart(2, '0')
   const sec = String(s % 60).padStart(2, '0')
-  return `${h}:${m}:${sec}`
+  return h > 0 ? `${h}:${m}:${sec}` : `${m}:${sec}`
 }
 
 const fmtFa = (n) => {
@@ -43,256 +44,193 @@ const fmtFa = (n) => {
 
 const CHARS = {
   drunstroy: {
-    img:        imgDrunstroy,
-    name:       'DRUNSTROY',
-    perks:      ['Прибыль в слотах', 'Доход в час'],
-    avatarBg:   'linear-gradient(135deg,#8b0000,#c0392b,#7a0000)',
-    accent:     '#c89000',
-    levelBg:    'bg-[#c89000]',
-    levelColor: 'text-black',
-    btnClass:   'bg-gradient-to-b from-[#f0c020] to-[#c89000] border-[#8a6000] shadow-[0_4px_0_#6a4000] text-black',
-    btnDisabled:'bg-black/15 border-transparent shadow-none text-[#555]',
-    displayLevel: 47,
+    img: imgDrunstroy,
+    name: 'DRUNSTROY',
+    perks: ['прибыль в слотах,', 'доход в час'],
+    avatarBg: 'linear-gradient(160deg,#8b0000,#c0392b,#7a0000)',
+    baseCost: 16900000000 
   },
   ganzapad: {
-    img:        imgGanzapad,
-    name:       'GANZAPAD',
-    perks:      ['Доход за клик', 'Время сбора денег'],
-    avatarBg:   'linear-gradient(135deg,#0a1a5a,#1a4aa0,#0a2060)',
-    accent:     '#7b3ff2',
-    levelBg:    'bg-[#7b3ff2]',
-    levelColor: 'text-white',
-    btnClass:   'bg-gradient-to-b from-[#9b5ff4] to-[#6b2fc4] border-[#5b1fa4] shadow-[0_4px_0_#3b0f84] text-white',
-    btnDisabled:'bg-black/15 border-transparent shadow-none text-[#555]',
-    displayLevel: 46,
+    img: imgGanzapad,
+    name: 'GANZAPAD',
+    perks: ['доход за клик', 'время сбора денег'],
+    avatarBg: 'linear-gradient(160deg,#0a1a5a,#1a4aa0,#0a2060)',
+    baseCost: 5000000
   },
   sub5: {
-    img:        imgSub5,
-    name:       'SUB-5',
-    perks:      ['Прибыль с друнов', 'Доход с бонусов'],
-    avatarBg:   'linear-gradient(135deg,#7a5000,#c8880a,#5a3a00)',
-    accent:     '#888',
-    levelBg:    'bg-[#888]',
-    levelColor: 'text-white',
-    btnClass:   'bg-gradient-to-b from-[#777] to-[#555] border-[#444] shadow-[0_4px_0_#222] text-white',
-    btnDisabled:'bg-black/15 border-transparent shadow-none text-[#555]',
-    displayLevel: 49,
+    img: imgSub5,
+    name: 'SUB-5',
+    perks: ['прибыль с друнов,', 'доход с бонусов'],
+    avatarBg: 'linear-gradient(160deg,#b87000,#e8a020,#8a5000)',
+    baseCost: 1400000000000
   },
 }
 
-const COSTS = {
-  drunstroy: 16_900_000_000,
-  ganzapad:  null,
-  sub5:      1_400_000_000_000,
-}
+const CharacterCardWrapper = ({ charKey, charData, userFa, onUpgrade, upgrading, setMsg }) => {
+  const cfg = CHARS[charKey];
+  const currentLevel = charData?.level ?? 0;
+  const cooldownEnd   = charData?.cooldown_end_ts ?? 0;
+  const cost          = charData?.upgrade_cost || charData?.cost || cfg.baseCost;
+  const cooldownSecs = useCooldown(cooldownEnd);
+  const isCooling    = cooldownSecs > 0;
+  const isMaxed      = charData?.is_maxed || false;
+  const canAfford    = cost != null && userFa != null && userFa >= cost;
+  const state        = isMaxed ? 'maxed' : isCooling ? 'timer' : canAfford ? 'upgrade' : 'broke';
 
-const CharacterCard = ({ charKey, charData, onUpgrade, upgrading }) => {
-  const cfg          = CHARS[charKey]
-  const cooldownSecs = useCooldown(charData?.cooldown_end_ts)
-  const isCooling    = cooldownSecs > 0
-  const isMaxed      = charData?.is_maxed || false
-  const reqLevel     = charData?.required_level ?? charData?.level ?? cfg.displayLevel
-  const cost         = charData?.upgrade_cost ?? COSTS[charKey]
-  const state        = isMaxed ? 'maxed' : isCooling ? 'timer' : 'upgrade'
+  if (!cfg || !charData) return <Skel className="w-full h-[110px]" />;
 
-  if (!cfg) return null
+  const handleDisabledClick = () => {
+    if (state === 'timer') setMsg({ type: 'cooldown', text: `Cooldown: ${fmtTimer(cooldownSecs)}` });
+    if (state === 'broke') setMsg({ type: 'error', text: `Insufficient FA: ${fmtFa(cost)}` });
+    if (state === 'maxed') setMsg({ type: 'max', text: `Max Level Reached!` });
+  };
 
-  const pillBase = 'w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-full font-black text-xs whitespace-nowrap border-2'
+  let buttonText, buttonBg, buttonBorder, buttonShadow, buttonTextColor, disableButton, onButtonClick;
 
-  const ActionBtn = () => {
-    if (!charData) return <Skel className="w-full h-8 rounded-full" />
-
-    if (state === 'upgrade') return (
-      <button
-        onClick={() => onUpgrade(charKey)}
-        disabled={upgrading}
-        className={`${pillBase} transition-transform active:scale-95 active:translate-y-0.5 ${
-          upgrading
-            ? `${cfg.btnDisabled} cursor-not-allowed opacity-70`
-            : `${cfg.btnClass} cursor-pointer`
-        }`}
-      >
-        {upgrading ? 'Улучшение...' : (
-          <>
-            <span>Улучшить</span>
-            <span className="flex items-center gap-1">
-              {cost != null ? fmtFa(cost) : '—'}
-              <img src={imgFaIcon} alt="" className="w-4 h-4 object-contain shrink-0" />
-            </span>
-          </>
-        )}
-      </button>
-    )
-
-    if (state === 'timer') return (
-      <div className={`${pillBase} ${cfg.btnClass}`}>
-        Осталось {fmtTimer(cooldownSecs)}
-      </div>
-    )
-
-    return (
-      <div className={`${pillBase} bg-black/10 border-black/20 text-[#444]`}>
-        Максимум
-      </div>
-    )
+  if (upgrading) {
+    buttonText = '...';
+    buttonBg = 'rgba(0,0,0,0.1)'; buttonBorder = 'transparent';
+    buttonShadow = 'none'; buttonTextColor = '#888';
+    disableButton = true;
+  } 
+  else if (state === 'timer') {
+    buttonText = `${fmtTimer(cooldownSecs)}`;
+    buttonBg = 'linear-gradient(180deg,#9b5ff4,#6b2fc4)'; buttonBorder = '#5b1fa4';
+    buttonShadow = '0 3px 0 #3b0f84'; buttonTextColor = '#fff';
+    disableButton = false; onButtonClick = handleDisabledClick;
+  } 
+  else if (state === 'maxed') {
+    buttonText = 'MAX';
+    buttonBg = 'rgba(0,0,0,0.2)'; buttonBorder = 'rgba(0,0,0,0.3)';
+    buttonShadow = 'none'; buttonTextColor = '#666';
+    disableButton = false; onButtonClick = handleDisabledClick;
+  } 
+  else if (state === 'broke') {
+    buttonText = `${fmtFa(cost)}`;
+    buttonBg = 'linear-gradient(180deg,#888888,#555555)'; buttonBorder = '#444';
+    buttonShadow = '0 3px 0 #222'; buttonTextColor = '#ddd';
+    disableButton = false; onButtonClick = handleDisabledClick;
+  } 
+  else {
+    buttonText = `${fmtFa(cost)}`;
+    buttonBg = 'linear-gradient(180deg,#f0c020,#c89000)'; buttonBorder = '#8a6000';
+    buttonShadow = '0 3px 0 #6a4000'; buttonTextColor = '#000';
+    disableButton = false; onButtonClick = () => onUpgrade(charKey);
   }
 
   return (
-    <div className="rounded-2xl bg-[#b4b4b4] border border-[#999] shadow-[0_4px_16px_rgba(0,0,0,0.35)] overflow-hidden flex items-stretch h-[108px] shrink-0">
-      {/* LEFT */}
-      <div
-        className="shrink-0 w-[108px] h-[108px] p-2 box-border"
-        style={{ background: cfg.avatarBg, borderRight: `2px solid ${cfg.accent}55` }}
-      >
-        <img src={cfg.img} alt={cfg.name} className="w-full h-full object-cover rounded-lg block" />
-      </div>
-
-      {/* RIGHT */}
-      <div className="flex-1 min-w-0 flex flex-col justify-between p-2 pl-2.5 relative overflow-hidden">
-        <span className={`absolute top-1.5 right-2 ${cfg.levelBg} ${cfg.levelColor} font-black text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap z-10`}>
-          ур. {reqLevel}
-        </span>
-
-        <span className="text-[#111] font-black text-[15px] tracking-wider leading-tight pr-14">
-          {cfg.name}
-        </span>
-
-        <div className="flex flex-col gap-0.5">
+    <StoryCard
+      cardBg={'#c0c0c0'}
+      image={cfg.img}
+      imageBg={cfg.avatarBg}
+      imageBorder={'#333'}
+      title={cfg.name}
+      ypText={`ур. ${currentLevel}`}
+      subtitle={
+        <div>
           {cfg.perks.map((p, i) => (
-            <span key={i} className="text-[#444] font-semibold text-[11px] leading-tight">{p}</span>
+            <p key={i} className="text-[#333] font-semibold text-[12px] leading-snug m-0">{p}</p>
           ))}
         </div>
-
-        <ActionBtn />
-      </div>
-    </div>
+      }
+      buttonText={`Улучшить ${buttonText}`}
+      buttonBg={buttonBg}
+      buttonBorder={buttonBorder}
+      buttonShadow={buttonShadow}
+      buttonTextColor={buttonTextColor}
+      onButtonClick={onButtonClick}
+      disableButton={disableButton}
+    />
   )
 }
 
-
 const Page14 = () => {
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const { user, characters } = useSelector((s) => s.game)
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user, characters } = useSelector((s) => s.game);
+  const [upgradingKey, setUpgradingKey] = useState(null);
+  const [msg, setMsg] = useState(null);
 
-  const [upgradingKey, setUpgradingKey] = useState(null)
-  const [msg,          setMsg]          = useState(null)
-
-  const profileLevel    = user?.profile_level ?? 0
-  const profileLevelMax = user?.profile_level_max ?? (profileLevel + 1)
-  const profileXp       = user?.profile_xp ?? 0
-  const profileXpNeeded = user?.profile_xp_needed ?? 100
-  const progressPct     = profileXpNeeded > 0 ? Math.min(100, Math.round((profileXp / profileXpNeeded) * 100)) : 0
+  const userFa = user?.fa ?? 0;
 
   const handleUpgrade = async (key) => {
-    setUpgradingKey(key)
+    setUpgradingKey(key);
     try {
-      await dispatch(doUpgradeCharacter(key)).unwrap()
-      setMsg({ ok: true, text: `${CHARS[key]?.name} улучшен!` })
-      dispatch(fetchState())
+      await dispatch(doUpgradeCharacter(key)).unwrap();
+      setMsg({ type: 'success', text: `Upgrade Successful!` });
+      dispatch(fetchState());
     } catch (e) {
-      setMsg({ ok: false, text: `${e}` })
+      setMsg({ type: 'error', text: e?.message || `Failed` });
     }
-    setUpgradingKey(null)
-    setTimeout(() => setMsg(null), 3000)
+    setUpgradingKey(null);
+    setTimeout(() => setMsg(null), 2500);
   }
+
+  const getToastColors = () => {
+    switch (msg?.type) {
+      case 'success':  return 'bg-green-500/80 border-green-400 text-white';
+      case 'error':    return 'bg-red-500/80 border-red-400 text-white';
+      case 'cooldown': return 'bg-purple-600/80 border-purple-400 text-white';
+      case 'max':      return 'bg-cyan-600/80 border-cyan-400 text-white';
+      default:         return 'bg-black/60 border-white/20 text-white';
+    }
+  };
 
   return (
     <div
-      className="max-w-[430px] mx-auto h-[100dvh] flex flex-col overflow-hidden relative"
-      style={{
-        backgroundImage: `url(${pageBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        fontFamily: "'Nunito','Segoe UI',sans-serif",
-      }}
+      className="w-full h-dvh flex flex-col overflow-hidden relative"
+      style={{ backgroundImage: `url(${pageBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
-      {/* SNACKBAR */}
-      {msg && (
-        <div
-          className={`absolute top-2 left-3 right-3 z-[9999] rounded-xl px-3 py-2 text-center font-black text-[13px] text-white border border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.6)] pointer-events-none ${
-            msg.ok ? 'bg-green-800/95' : 'bg-red-800/95'
-          }`}
-        >
-          {msg.text}
-        </div>
-      )}
-
-      {/* HEADER */}
-      <div className="shrink-0 flex flex-col items-center pt-2 pb-0.5 bg-gradient-to-b from-black to-transparent">
-        <span className="text-white font-black text-[14px] tracking-[0.15em] uppercase">
-          DRUN FAMILY
-        </span>
-        <div className="flex items-center w-full px-5 mt-0.5">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#666]" />
-          <span className="text-[#888] text-[9px] tracking-[0.3em] mx-2 italic">game</span>
-          <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#666]" />
+      {/* FLOATING TOAST */}
+      <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[10000] w-[85%] transition-all duration-500 ease-out transform ${msg ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-90 pointer-events-none'}`}>
+        <div className={`py-3 px-5 rounded-2xl border backdrop-blur-lg flex items-center justify-center shadow-[0_10px_25px_rgba(0,0,0,0.4)] ${getToastColors()}`}>
+            <span className="font-bold text-[13px] uppercase tracking-wider text-center drop-shadow-sm">
+              {msg?.text}
+            </span>
         </div>
       </div>
 
-      {/* TABS */}
-      <div className="shrink-0 flex items-center px-5 pt-1.5 gap-8">
-        {['ПЕРСОНАЖИ', 'УЛУЧШЕНИЯ'].map((tab, i) => (
-          <button
-            key={i}
-            onClick={() => i === 1 && navigate('/page15')}
-            className={`bg-transparent border-x-0 border-t-0 border-b-2 pb-0.5 font-black text-[15px] tracking-wider uppercase whitespace-nowrap ${
-              i === 0
-                ? 'text-[#6ecf20] border-b-[#6ecf20] cursor-default'
-                : 'text-white/55 border-b-transparent cursor-pointer'
-            }`}
-          >
-            {tab}
+      {/* HEADER - PAGE 15 STYLE */}
+      <div className="shrink-0 border-white/10 px-4 pt-3 pb-4 space-y-3" style={{ background: '#dbdbdb' }}>
+        <div className="flex justify-center overflow-hidden mx-auto" style={{ width: 160, height: 41, position: 'relative' }}>
+          <img src={logoDark} alt="Logo" style={{ position: 'absolute', width: 266, height: 'auto', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+        </div>
+
+        <div className="flex justify-between px-2">
+            <button className="bg-transparent border-none font-black text-xs tracking-widest uppercase text-[#6ecf20] cursor-default">
+            ПЕРСОНАЖИ
           </button>
-        ))}
-      </div>
-
-      {/* PROGRESS BAR */}
-      <div className="shrink-0 flex items-center gap-2 px-5 pt-1.5">
-        <div className="shrink-0 relative w-8 h-8 flex items-center justify-center">
-          <div className="w-6 h-6 bg-gradient-to-br from-[#ffe033] via-[#f0c020] to-[#c89000] border-2 border-[#8a6000] rotate-45 shadow-[0_0_8px_rgba(240,192,32,0.6)]" />
-          <span className="absolute text-black font-black text-[12px] z-10">
-            {user ? profileLevel : <Skel className="w-3 h-3 rounded-sm" />}
-          </span>
+          <button onClick={() => navigate('/page15')} className="bg-transparent border-none font-black text-xs tracking-widest uppercase text-black cursor-pointer">
+            УЛУЧШЕНИЯ
+          </button>
         </div>
 
-        <div className="flex-1 h-2.5 rounded-full bg-white/[0.07] border border-white/15 overflow-hidden">
-          <div
-            className="h-full rounded-full transition-[width] duration-500 ease-out"
-            style={{
-              width: `${progressPct}%`,
-              background: 'linear-gradient(90deg,#c89000,#f0c020 45%,#86efac 80%,#6ecf20)',
-            }}
-          />
-        </div>
-
-        <div className="shrink-0 relative w-8 h-8 flex items-center justify-center">
-          <div className="w-6 h-6 bg-gradient-to-br from-[#6ecf20] via-[#4aaf10] to-[#2a8a00] border-2 border-[#2a6a08] rotate-45 shadow-[0_0_8px_rgba(110,207,32,0.6)]" />
-          <span className="absolute text-white font-black text-[12px] z-10">
-            {user ? profileLevelMax : <Skel className="w-3 h-3 rounded-sm" />}
-          </span>
+        <div className="relative w-full h-[4px] rounded-full mx-1">
+          <div className="absolute left-0 top-0 h-[4px] w-1/2 bg-[#6ecf20] rounded-l-full" />
+          <div className="absolute left-1/2 top-0 h-[4px] w-1/2 bg-black rounded-r-full" />
+          <div className="absolute -left-2 top-1/2 -translate-y-1/2 rotate-45 w-4 h-4 bg-[#6ecf20]" />
+          <div className="absolute -right-2 top-1/2 -translate-y-1/2 rotate-45 w-4 h-4 bg-black" />
         </div>
       </div>
 
-      {/* DESCRIPTION */}
-      <div className="shrink-0 mx-3.5 mt-1.5 rounded-xl bg-black/70 border border-white/10 px-3 py-2">
-        <p className="text-white/[0.82] font-semibold text-[11px] leading-relaxed text-center m-0">
-          Улучшая персонажей, вы увеличиваете свой уровень. Каждый уровень даёт +2% ко всем доходам, а на последнем уровне станет доступен вывод средств.
+      {/* INFO BAR */}
+      <div className="shrink-0 mx-4 mt-2 mb-2 rounded-xl px-3 py-1.5 border border-white bg-black">
+        <p className="text-white text-[10px] leading-snug text-center m-0 font-days">
+          Улучшая персонажей, вы увеличиваете свой уровень. Каждый уровень даёт +2% ко всем доходам.
         </p>
       </div>
 
-      {/* CARDS — min-h-0 makes flex child respect parent height, scroll only when needed */}
-      <div
-        className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3.5 pt-2 pb-24 flex flex-col gap-2.5"
-        style={{ WebkitOverflowScrolling: 'touch' }}
-      >
+      {/* LIST */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 pb-36 flex flex-col gap-3">
         {['drunstroy', 'ganzapad', 'sub5'].map((key) => (
-          <CharacterCard
+          <CharacterCardWrapper
             key={key}
             charKey={key}
             charData={characters?.[key] ?? null}
+            userFa={userFa}
             onUpgrade={handleUpgrade}
             upgrading={upgradingKey === key}
+            setMsg={setMsg}
           />
         ))}
       </div>
@@ -302,4 +240,4 @@ const Page14 = () => {
   )
 }
 
-export default Page14
+export default Page14;
